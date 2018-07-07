@@ -5,15 +5,17 @@
 PySpy was born out of frustration over the *death* of [Pirate's Little Helper](http://eve-plh.com/#/home),
 a great [EVE Online](https://www.eveonline.com/) third-party tool to gather useful information on character names from the in-game *local chat* window.
 
-PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and
-[zKillboard's API](https://github.com/zKillboard/zKillboard/wiki) and is available on Windows and macOS.
+PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
+[zKillboard API](https://github.com/zKillboard/zKillboard/wiki) and is available on Windows and macOS.
 
 ## How to use PySpy
 
-1. Open PySpy, position the window and adjust transparency (bottom left slider). PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
-2. In your EVE client, select a list of characters and copy them to the clipboard (Mac: `⌘+C` / Windows: `CTRL+C`)
+1. Open PySpy.
+2. In your EVE client, select a list of characters and copy them to the clipboard (`CTRL+C` on Windows *or* `⌘+C` on macOS).
 3. Wait until PySpy is done and inspect the results.
 4. Double-click a name to open the respective zKillboard in your browser.
+
+**Note**: PySpy will save its window location, size, column sizes and transparency (slider on bottom right) settings automatically and restore them the next time you launch it. PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
 
 ## Information Provided by PySpy
 
@@ -30,6 +32,8 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and
 
 **Note**: Characters that have killed BLOPS or have lost HICs are high-lighted *orange*.
 
+**Current Limitations**: To avoid undue strain on zKillboard's API, PySpy will run the *K-B-H* analysis only for the first 20 characters in the list.
+
 ## Installation
 
 PySpy comes as a single-file executable both in Windows and macOS. On both platforms, you can run PySpy from any folder location you like.
@@ -38,12 +42,23 @@ You can download the latest version here:
 * **Windows**:
 * **macOS**:
 
-## How to uninstall
+**Note**: PySpy automatically checks for updates on launch.
+
+## Uninstalling PySpy
 
 Delete the PySpy executable and remove the following files manually:
 
 * **Windows**: PySpy saves preference and log files in a folder called  `PySpy` located at `%LocalAppData%`.
 * **macOS**: PySpy creates `pyspy.log` under `~/Library/Logs` and `pyspy.cfg` under `~/Library/Preferences`.
+
+## Future Features
+
+Below is a non-exhaustive list of additional features I plan to add to PySpy as and when the ESI and zKillboard APIs support them:
+
+* **Standings**: Only show characters that are non-blue, i.e. neutral or hostile.
+* **Cynos**: Indicate if a character has in the past lost ships with regular or covert cynos.
+* **Improved GUI**: The current GUI is very basic and while it works, I do appreciate that it is not ideal for people who cannot use it on a second screen but actually have to overlay it on-top of their EVE client.
+
 
 ## Bug Reporting
 
