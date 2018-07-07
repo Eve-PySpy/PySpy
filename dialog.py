@@ -56,6 +56,7 @@ class MyDialog(wx.Dialog):
 
 # end of class MyDialog
 
+
 class MyFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: MyFrame.__init__
@@ -78,6 +79,7 @@ class MyFrame(wx.Frame):
         # end wxGlade
 
 # end of class MyFrame
+
 
 class MyApp(wx.App):
     def OnInit(self):
