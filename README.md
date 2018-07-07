@@ -18,7 +18,7 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and
 ## Information Provided by PySpy
 
 <p align="center">
-  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/pyspy_screenshot.png">
+  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.1_screenshot.png?raw=true">
 </p>
 
 * **Character**: Character name.
