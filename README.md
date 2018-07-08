@@ -2,7 +2,14 @@
 
 # PySpy - A simple EVE Online character intel tool using CCP's ESI API
 
-**Download the latest release [here](https://github.com/WhiteRusssian/PySpy/releases/latest).**
+<p align="left">
+  <a href=https://github.com/WhiteRusssian/PySpy/releases/latest>
+    <img alt="Number of releases downloaded" src="https://img.shields.io/github/downloads/WhiteRusssian/PySpy/total.svg">
+  </a>
+</p>
+
+**Download the latest release [here](https://github.com/WhiteRusssian/PySpy/releases/latest).** 
+
 
 ## Background
 
