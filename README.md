@@ -2,6 +2,8 @@
 
 # PySpy - A simple EVE Online character intel tool using CCP's ESI API
 
+**Download the latest release [here](https://github.com/WhiteRusssian/PySpy/releases/latest).**
+
 ## Background
 
 PySpy was born out of frustration over the *death* of [Pirate's Little Helper](http://eve-plh.com/#/home),
