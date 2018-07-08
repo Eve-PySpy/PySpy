@@ -59,9 +59,11 @@ Below is a non-exhaustive list of additional features I plan to add to PySpy as 
 * **Cynos**: Indicate if a character has in the past lost ships fitted with regular or covert cynos.
 * **Improved GUI**: The current GUI is very basic and while it works, I do appreciate that it is not ideal for people who cannot use it on a second screen but actually have to overlay it on-top of their EVE client.
 
+Please feel free to add a [feature request](https://github.com/WhiteRusssian/PySpy/issues/new?template=pyspy-feature-request.md) for any improvements you would like to see in future releases.
+
 ## Bug Reporting
 
-Despite PySpy's simplicity and extensive testing, you may encounter the odd bug. If so, please check if an existing [issue](https://github.com/WhiteRusssian/PySpy/issues) already describes your bug. If not, feel free to [create a new issue](https://github.com/WhiteRusssian/PySpy/issues/new?template=bug_report.md) for your bug.
+Despite PySpy's simplicity and extensive testing, you may encounter the odd bug. If so, please check if an existing [issue](https://github.com/WhiteRusssian/PySpy/issues) already describes your bug. If not, feel free to [create a new issue](https://github.com/WhiteRusssian/PySpy/issues/new?template=pyspy-bug-report.md) for your bug.
 
 ## Dependencies & Acknowledgements
 
