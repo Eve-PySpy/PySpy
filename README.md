@@ -38,7 +38,7 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 
 ## Installation
 
-You can download the latest release for your operating system [here](https://github.com/WhiteRusssian/PySpy/tree/master/download).
+You can download the latest release for your operating system [here](https://github.com/WhiteRusssian/PySpy/releases/latest).
 
 PySpy comes as a single-file executable both in Windows and macOS. On both platforms, you can run PySpy from any folder location you like.
 
