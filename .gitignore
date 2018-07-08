@@ -1,6 +1,7 @@
 # Custom folders
 other/
 tmp/
+download/
 
 # macOS stuff
 .DS_Store
