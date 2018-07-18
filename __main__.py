@@ -22,6 +22,7 @@ import analyze
 import chkversion
 import config
 import gui
+import reportstats
 import statusmsg
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words russsian, ccp's, pyperclip, chkversion, clpbd, gui
@@ -31,6 +32,7 @@ Logger = logging.getLogger(__name__)
 
 
 def watch_clpbd():
+    valid = False
     recent_value = None
     while True:
         clipboard = pyperclip.paste()
@@ -61,11 +63,13 @@ def analyze_chars(char_names):
     wx.CallAfter(app.PySpy.list.DeleteAllItems)
     try:
         outlist = analyze.main(char_names)
+        duration = round(time.time() - start_time, 1)
+        reportstats.ReportStats(outlist, duration).start()
         if outlist is not None:
-            wx.CallAfter(app.PySpy.update_list, outlist, start_time)
+            wx.CallAfter(app.PySpy.updateList, outlist, duration)
         else:
             statusmsg.push_status(
-                  "No valid character names found. Please try again..."
+                "No valid character names found. Please try again..."
                 )
     except Exception:
         Logger.error(

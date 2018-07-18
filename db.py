@@ -5,8 +5,10 @@
 '''Establishes an in memory SQLite3 database and creates a few tables as
 well as provides a function to write records to the database.'''
 # **********************************************************************
-import sqlite3
 import logging
+import sqlite3
+
+import config
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words wrusssian, sqlite, blops, russsian
 # **********************************************************************
@@ -31,8 +33,8 @@ def prepare_tables(conn, cur):
     function.'''
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS characters (char_name TEXT, char_id INT,
-        corp_id INT, alliance_id INT, kills INT, blops_kills INT,
-        hic_losses INT)'''
+        corp_id INT, alliance_id INT, faction_id INT, kills INT,
+        blops_kills INT, hic_losses INT, week_kills INT)'''
         )
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS corporations (id INT, name TEXT)'''
@@ -40,6 +42,13 @@ def prepare_tables(conn, cur):
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS alliances (id INT, name TEXT)'''
         )
+    cur.execute(
+        '''CREATE TABLE IF NOT EXISTS factions (id INT, name TEXT)'''
+        )
+    cur.executemany(
+        '''INSERT INTO factions (id, name) VALUES (?, ?)''',
+        config.FACTION_IDS
+    )
     conn.commit()
 
 

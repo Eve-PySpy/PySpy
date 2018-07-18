@@ -17,7 +17,7 @@ import config
 import statusmsg
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words wrusssian, ZKILL, gmail, blops, toon, HICs, russsian,
-# // cSpell:words ccp's
+# // cSpell:words ccp's, activepvp
 # **********************************************************************
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
@@ -113,5 +113,13 @@ class Query_zKill(threading.Thread):
         except KeyError:
             hic_losses = 0
 
-        self._queue.put([kills, blops_kills, hic_losses, self._char_id])
+        try:
+            # Kills over past 7 days
+            week_kills = r["activepvp"]["kills"]["count"]
+        except KeyError:
+            week_kills = 0
+
+        self._queue.put(
+            [kills, blops_kills, hic_losses, week_kills, self._char_id]
+            )
         return

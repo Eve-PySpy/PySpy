@@ -1,15 +1,17 @@
-<!--- // cSpell:words killboard, blops, hics, killboard's, cynos, ccp's, pyspy, psf's, pyperclip, pyinstaller, executables, jojo, unported --->
+<!--- // cSpell:words killboard, blops, hics, killboard's, cynos, ccp's, pyspy, psf's, pyperclip, pyinstaller, executables, jojo, unported, killmails --->
 
 # PySpy - A simple EVE Online character intel tool using CCP's ESI API
 
 <p align="left">
   <a href=https://github.com/WhiteRusssian/PySpy/releases/latest>
+    <img alt="Current Version" src="https://img.shields.io/github/release/whiterusssian/pyspy.svg">
+  </a>
+  <a href=https://github.com/WhiteRusssian/PySpy/releases/latest>
     <img alt="Number of releases downloaded" src="https://img.shields.io/github/downloads/WhiteRusssian/PySpy/total.svg">
   </a>
 </p>
 
-**Download the latest release [here](https://github.com/WhiteRusssian/PySpy/releases/latest).** 
-
+**Download the latest release [here](https://github.com/WhiteRusssian/PySpy/releases/latest).**
 
 ## Background
 
@@ -26,24 +28,26 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 3. Wait until PySpy is done and inspect the results.
 4. Double-click a name to open the respective zKillboard in your browser.
 
-**Note**: PySpy will save its window location, size, column sizes and transparency (slider on bottom right) settings automatically and restore them the next time you launch it. PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
+**Note**: PySpy will save its window location, size, column sizes and transparency (slider on bottom right) and any other settings automatically and restore them the next time you launch it. PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
 
 ## Information Provided by PySpy
 
 <p align="center">
-  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.1_screenshot.png?raw=true">
+  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.2_screenshot.png?raw=true">
 </p>
 
 * **Character**: Character name.
 * **Corporation**: Corporation of character.
-* **Alliance**: Alliance of Character's Corporation, if any.
+* **Alliance**: Alliance of character's Corporation, if any.
+* **Faction**: Faction of character, if any.
+* **Last Wk**: Number of kills over past 7 days.
 * **K**: Total number of kills.
 * **B**: Number of Black Ops Battleships (BLOPS) killed.
 * **H**: Number of lost Heavy Interdiction Cruisers (HIC).
 
-**Note**: Characters that have killed BLOPS or have lost HICs are high-lighted *orange*.
+**Note**: Characters that have killed BLOPS or have lost HICs are high-lighted *orange*. This can now be changed in the *View* menu.
 
-**Current Limitations**: To avoid undue strain on zKillboard's API, PySpy will run the *K-B-H* analysis only for the first 20 characters in the list.
+**Current Limitations**: To avoid undue strain on zKillboard's API, PySpy will run the *Last Wk* and *K-B-H* analyses only for the first 30 characters in the list.
 
 ## Installation
 
@@ -58,14 +62,14 @@ PySpy comes as a single-file executable both in Windows and macOS. On both platf
 Delete the PySpy executable and remove the following files manually:
 
 * **Windows**: PySpy saves preference and log files in a folder called  `PySpy` located at `%LocalAppData%`.
-* **macOS**: PySpy creates `pyspy.log` under `~/Library/Logs` and `pyspy.cfg` under `~/Library/Preferences`.
+* **macOS**: PySpy creates `pyspy.log` under `~/Library/Logs` and `pyspy.cfg` as well as `pyspy.pickle` under `~/Library/Preferences`.
 
 ## Future Features
 
 Below is a non-exhaustive list of additional features I plan to add to PySpy as and when the ESI and zKillboard APIs support them:
 
 * **Standings**: Only show characters that are non-blue, i.e. neutral or hostile.
-* **Cynos**: Indicate if a character has in the past lost ships fitted with regular or covert cynos.
+* **Cynos**: Indicate if a character has in the past lost ships fitted with regular or covert cynos. I am currently putting together the underlying database of killmails and expect to add this feature in August.
 * **Improved GUI**: The current GUI is very basic and while it works, I do appreciate that it is not ideal for people who cannot use it on a second screen but actually have to overlay it on-top of their EVE client.
 
 Please feel free to add a [feature request](https://github.com/WhiteRusssian/PySpy/issues/new?template=pyspy-feature-request.md) for any improvements you would like to see in future releases.
@@ -81,7 +85,7 @@ Despite PySpy's simplicity and extensive testing, you may encounter the odd bug.
 * Clipboard monitoring is implemented with the help of [pyperclip](https://github.com/asweigart/pyperclip) (v1.6.2), licensed under the [3-Clause BSD License](https://github.com/asweigart/pyperclip/blob/master/LICENSE.txt).
 * The GUI is powered by [wxPython](https://www.wxpython.org/) (v4.0.3), licensed under the [wxWindows Library Licence](https://wxpython.org/pages/license/index.html).
 * The Windows and macOS executables are built using [pyinstaller](https://www.pyinstaller.org/), licensed under [its own modified GPL license](https://raw.githubusercontent.com/pyinstaller/pyinstaller/develop/COPYING.txt).
-* PySpy's icon was created by Jojo Mendoza and is licensed under [Creative Commons (Attribution-Noncommercial 3.0 Unported)](https://creativecommons.org/licenses/by-nc/3.0/). It is available on https://www.iconfinder.com/icons/1218719/cyber_hat_spy_undercover_user_icon.
+* PySpy's icon was created by Jojo Mendoza and is licensed under [Creative Commons (Attribution-Noncommercial 3.0 Unported)](https://creativecommons.org/licenses/by-nc/3.0/). It is available on [IconFinder](https://www.iconfinder.com/icons/1218719/cyber_hat_spy_undercover_user_icon).
 
 ## License
 

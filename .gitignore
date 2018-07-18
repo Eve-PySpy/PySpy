@@ -2,6 +2,8 @@
 other/
 tmp/
 download/
+sql/
+stats_server/
 
 # macOS stuff
 .DS_Store

@@ -8,10 +8,14 @@ import logging.config
 import logging
 import os
 import sys
+import uuid
 
 import requests
+
+import optstore
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words MEIPASS, datefmt, russsian, pyinstaller, posix, pyspy
+# // cSpell:words zkill, amarr, caldari, gallente, minmatar
 # **********************************************************************
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
@@ -27,15 +31,6 @@ def resource_path(relative_path):
         base_path = os.path.dirname(__file__)
 
     return os.path.join(base_path, relative_path)
-
-# Read current version from VERSION file
-with open(resource_path('VERSION'), 'r') as ver_file:
-    CURRENT_VER = ver_file.read().replace('\n', '')
-
-# Various constants
-MAX_NAMES = 500  # The max number of char names to be processed
-GUI_TITLE = "PySpy v" + CURRENT_VER
-
 
 # If application is frozen executable
 if getattr(sys, 'frozen', False):
@@ -68,6 +63,47 @@ elif __file__:
 
 LOG_FILE = os.path.join(LOG_PATH, "pyspy.log")
 GUI_CFG_FILE = os.path.join(PREF_PATH, "pyspy.cfg")
+OPTIONS_FILE = os.path.join(PREF_PATH, "pyspy.pickle")
+
+# Persisten options object
+OPTIONS_OBJECT = optstore.PersistentOptions(OPTIONS_FILE)
+
+# Read current version from VERSION file
+with open(resource_path('VERSION'), 'r') as ver_file:
+    CURRENT_VER = ver_file.read().replace('\n', '')
+
+# Clean up old GUI_CFG_FILES
+if os.path.isfile(GUI_CFG_FILE) and not os.path.isfile(OPTIONS_FILE):
+    try:
+        os.remove(GUI_CFG_FILE)
+    except:
+        pass
+if OPTIONS_OBJECT.Get("version", 0) != CURRENT_VER:
+    try:
+        os.remove(GUI_CFG_FILE)
+    except:
+        pass
+
+# Unique identifier for usage statistics reporting
+if OPTIONS_OBJECT.Get("uuid", "not set") == "not set":
+    OPTIONS_OBJECT.Set("uuid", str(uuid.uuid4()))
+
+# Various constants
+MAX_NAMES = 500  # The max number of char names to be processed
+ZKILL_DELAY = 0.05  # API rate limit is 10/second, pushing it a little...
+ZKILL_CALLS = 30
+GUI_TITLE = "PySpy " + CURRENT_VER
+
+# Note, Amarr and Caldari are allied and have IDs ending on uneven integers.
+# Likewise, Gallente and Minmatar, also allied, have even IDs.
+# We will use this to block certain faction alliances.
+FACTION_IDS = (
+    (("500001", "Caldari"), ) +
+    (("500002", "Minmatar"), ) +
+    (("500003", "Amarr"), ) +
+    (("500004", "Gallente"), )
+)
+IGNORED_FACTIONS = OPTIONS_OBJECT.Get("IgnoredFactions", 0)
 
 # Logging setup
 ''' For each module that requires logging, make sure to import modules

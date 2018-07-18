@@ -8,12 +8,15 @@ import logging.config
 import logging
 import os
 import sys
+import datetime
 
 import requests
 import wx
 
 import __main__
 import config
+# cSpell Checker - Correct Words****************************************
+# // cSpell:words russsian
 # **********************************************************************
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
@@ -21,15 +24,18 @@ CURRENT_VER = config.CURRENT_VER
 
 
 def chk_github_update():
-    # Get latest version available on GitHub
-    GIT_URL = "https://raw.githubusercontent.com/WhiteRusssian/PySpy/master/VERSION"
-    try:
-        latest_ver = requests.get(GIT_URL).text.replace('\n', '')
-        Logger.info(
-            "You are running v" + CURRENT_VER + " and v" +
-            latest_ver + " is the latest version available on GitHub."
-            )
-    except:
-        Logger.info("Could not check GitHub for potential available updates.")
-    if latest_ver != CURRENT_VER:
-        wx.CallAfter(__main__.app.PySpy.update_alert, latest_ver, CURRENT_VER)
+    last_check = config.OPTIONS_OBJECT.Get("last_update_check", 0)
+    if last_check == 0 or last_check < datetime.date.today():
+        # Get latest version available on GitHub
+        GIT_URL = "https://api.github.com/repos/WhiteRusssian/PySpy/releases/latest"
+        try:
+            latest_ver = requests.get(GIT_URL).json()["tag_name"]
+            Logger.info(
+                "You are running " + CURRENT_VER + " and " +
+                latest_ver + " is the latest version available on GitHub."
+                )
+        except:
+            Logger.info("Could not check GitHub for potential available updates.")
+        config.OPTIONS_OBJECT.Set("last_update_check", datetime.date.today())
+        if latest_ver != CURRENT_VER:
+            wx.CallAfter(__main__.app.PySpy.updateAlert, latest_ver, CURRENT_VER)

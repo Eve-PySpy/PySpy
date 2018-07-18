@@ -39,7 +39,8 @@ def main(char_names):
         t.join()
         zkill_stats = q_main.get()
         query_string = (
-            '''UPDATE characters SET kills=?, blops_kills=?, hic_losses=?
+            '''UPDATE characters SET kills=?, blops_kills=?, hic_losses=?,
+            week_kills=?
             WHERE char_id=?'''
             )
         db.write_many_to_db(conn, cur, query_string, zkill_stats)
@@ -77,16 +78,18 @@ def get_char_affiliations(conn, cur):
     except:
         Logger.info("Failed to obtain character affiliations.", exc_info=True)
         raise Exception
+
     records = ()
     for r in affiliations:
-        if "alliance_id" in r:
-            records = records + (
-                (r["corporation_id"], r["alliance_id"], r["character_id"]),
-                )
-        else:
-            records = records + ((r["corporation_id"], 0, r["character_id"]),)
+        corp_id = r["corporation_id"]
+        alliance_id = r["alliance_id"] if "alliance_id" in r else 0
+        faction_id = r["faction_id"] if "faction_id" in r else 0
+        char_id = r["character_id"]
+        records = records + ((corp_id, alliance_id, faction_id, char_id), )
+
     query_string = (
-        '''UPDATE characters SET corp_id=?, alliance_id=? WHERE char_id=?'''
+        '''UPDATE characters SET corp_id=?, alliance_id=?, faction_id=?
+        WHERE char_id=?'''
         )
     records_added = db.write_many_to_db(conn, cur, query_string, records)
 
@@ -136,7 +139,7 @@ class zKillStats(threading.Thread):
 
     def run(self):
         count = 0
-        max = 20
+        max = config.ZKILL_CALLS
         threads = []
         q_sub = queue.Queue()
         for id in self._char_ids:
@@ -144,7 +147,7 @@ class zKillStats(threading.Thread):
             threads.append(t)
             t.start()
             count += 1
-            time.sleep(0.05)
+            time.sleep(config.ZKILL_DELAY)
             if count >= max:
                 break
         for t in threads:
@@ -156,8 +159,9 @@ class zKillStats(threading.Thread):
             kills = str(s[0])
             blops_kills = str(s[1])
             hic_losses = str(s[2])
-            id = str(s[3])
-            zkill_stats.append([kills, blops_kills, hic_losses, id])
+            week_kills = str(s[3])
+            id = str(s[4])
+            zkill_stats.append([kills, blops_kills, hic_losses, week_kills, id])
         self._q_main.put(zkill_stats)
         return
 
@@ -165,11 +169,12 @@ class zKillStats(threading.Thread):
 def output_list(cur):
     query_string = (
         '''SELECT
-        ch.char_id, ch.char_name, co.name, al.name, ac.numid, ch.kills,
-        ch.blops_kills, hic_losses
+        ch.char_id, ch.faction_id, ch.char_name, co.name, al.name, fa.name,
+        ac.numid, ch.week_kills, ch.kills, ch.blops_kills, hic_losses
         FROM characters AS ch
         LEFT JOIN alliances AS al ON ch.alliance_id = al.id
         LEFT JOIN corporations AS co ON ch.corp_id = co.id
+        LEFT JOIN factions AS fa ON ch.faction_id = fa.id
         LEFT JOIN (SELECT alliance_id, COUNT(alliance_id) AS numid FROM characters GROUP BY alliance_id) AS ac ON
         ch.alliance_id = ac.alliance_id
         ORDER BY ch.char_name'''

@@ -21,4 +21,4 @@ Logger = logging.getLogger(__name__)
 
 
 def push_status(msg):
-    wx.CallAfter(__main__.app.PySpy.update_statusbar, msg)
+    wx.CallAfter(__main__.app.PySpy.updateStatusbar, msg)
