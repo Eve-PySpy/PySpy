@@ -11,15 +11,18 @@ import time
 import webbrowser
 
 import wx
+import wx.grid as WXG
 import wx.lib.agw.persist as pm
 
 import aboutdialog
 import config
+import ignoredialog
+import sortarray
 import statusmsg
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words wrusssian, wxpython, HRULES, VRULES, ELLIPSIZE, zkill,
 # // cSpell:words blops, Unregister, russsian, chkversion, posix,
-# // cSpell:words Gallente, Minmatar, Amarr, Caldari, ontop
+# // cSpell:words Gallente, Minmatar, Amarr, Caldari, ontop, hics
 # **********************************************************************
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
@@ -31,28 +34,51 @@ class Frame(wx.Frame):
         # Persistent Options
         self.options = config.OPTIONS_OBJECT
 
-        kwds["style"] = kwds.get("style", 0) | wx.DEFAULT_FRAME_STYLE
+        kwds["style"] = kwds.get("style", 0) | wx.DEFAULT_FRAME_STYLE  # wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         self.SetName("Main Window")
+
+        self.Font = self.Font.Scaled(self.options.Get("FontScale", 1))
 
         # Set stay on-top unless user deactivated it
         if self.options.Get("StayOnTop", True):
             self.ToggleWindowStyle(wx.STAY_ON_TOP)
+
+        # Set parameters for columns
+        self.columns = (
+            # Index, Heading, Format, Default Width, Can Toggle, Default Show, Menu Name, Outlist Column
+            [0, "ID", wx.ALIGN_LEFT, 0, False, False, "", 0],
+            [1, "Faction ID", wx.ALIGN_LEFT, 0, False, False, "", 1],
+            [2, "Character", wx.ALIGN_LEFT, 115, False, True, "", 2],
+            [3, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+S", 15],
+            [4, "CorpID", wx.ALIGN_LEFT, 0, False, False, "", 3],
+            [5, "Corporation", wx.ALIGN_LEFT, 115, True, True, "Cor&poration\tCTRL+P", 4],
+            [6, "AllianceID", wx.ALIGN_LEFT, 0, False, False, "-", 5],
+            [7, "Alliance", wx.ALIGN_LEFT, 175, True, True, "All&iance\tCTRL+I", 6],
+            [8, "Faction", wx.ALIGN_LEFT, 60, True, True, "&Faction\tCTRL+F", 7],
+            [9, "Kills", wx.ALIGN_RIGHT, 50, True, True, "&Kills\tCTRL+K", 10],
+            [10, "Losses", wx.ALIGN_RIGHT, 50, True, True, "&Losses\tCTRL+L", 13],
+            [11, "Last Wk", wx.ALIGN_RIGHT, 50, True, True, "Last &Wk\tCTRL+W", 9],
+            [12, "Solo", wx.ALIGN_RIGHT, 50, True, True, "S&olo\tCTRL+O", 14],
+            [13, "BLOPS", wx.ALIGN_RIGHT, 50, True, True, "&BLOPS\tCTRL+B", 11],
+            [14, "HICs", wx.ALIGN_RIGHT, 50, True, False, "&HICs\tCTRL+H", 12],
+            [15, "", None, 1, False, True, ""],  # Need for _stretchLastCol()
+            )
 
         # Define the menu bar and menu items
         self.menubar = wx.MenuBar()
         self.menubar.SetName("Menubar")
         if os.name == "nt":  # For Windows
             self.file_menu = wx.Menu()
-            self.file_about = self.file_menu.Append(wx.ID_ANY, 'About')
-            self.file_menu.Bind(wx.EVT_MENU, aboutdialog.OnAboutBox, self.file_about)
+            self.file_about = self.file_menu.Append(wx.ID_ANY, '&About\tCTRL+A')
+            self.file_menu.Bind(wx.EVT_MENU, self._openAboutDialog, self.file_about)
             self.file_quit = self.file_menu.Append(wx.ID_ANY, 'Quit PySpy')
             self.file_menu.Bind(wx.EVT_MENU, self.OnQuit, self.file_quit)
             self.menubar.Append(self.file_menu, 'File')
         if os.name == "posix":  # For macOS
             self.help_menu = wx.Menu()
-            self.help_about = self.help_menu.Append(wx.ID_ANY, 'About')
-            self.help_menu.Bind(wx.EVT_MENU, aboutdialog.OnAboutBox, self.help_about)
+            self.help_about = self.help_menu.Append(wx.ID_ANY, '&About\tCTRL+A')
+            self.help_menu.Bind(wx.EVT_MENU, self._openAboutDialog, self.help_about)
             self.menubar.Append(self.help_menu, 'Help')
 
         # View menu is platform independent
@@ -60,74 +86,79 @@ class Frame(wx.Frame):
 
         # Toggle highlighting of BLOPS kills and HIC losses
         self.hl_blops = self.view_menu.AppendCheckItem(
-            wx.ID_ANY, 'Highlight BLOPS Kills and HIC Losses'
+            wx.ID_ANY, '&Highlight BLOPS Kills and HIC Losses\tCTRL+SHIFT+H'
             )
-        self.view_menu.Bind(wx.EVT_MENU, self.toggleHlBlops, self.hl_blops)
+        self.view_menu.Bind(wx.EVT_MENU, self._toggleHlBlops, self.hl_blops)
+        self.hl_blops.Check(self.options.Get("HlBlops", True))
 
         self.view_menu.AppendSeparator()
 
-        # Show / hide columns
-        self.show_corp = self.view_menu.AppendCheckItem(wx.ID_ANY, 'Show Corporation')
-        self.view_menu.Bind(wx.EVT_MENU, self.toggleViewCorp, self.show_corp)
-
-        self.show_alliance = self.view_menu.AppendCheckItem(wx.ID_ANY, 'Show Alliance')
-        self.view_menu.Bind(wx.EVT_MENU, self.toggleViewAlliance, self.show_alliance)
-
-        self.show_faction = self.view_menu.AppendCheckItem(wx.ID_ANY, 'Show Faction')
-        self.view_menu.Bind(wx.EVT_MENU, self.toggleViewFaction, self.show_faction)
+        self._createShowColMenuItems()
 
         self.view_menu.AppendSeparator()
 
         # Ignore Factions submenu for view menu
-        self.view_sub_menu = wx.Menu()
-        self.view_menu.Append(wx.ID_ANY, "Ignore Factions", self.view_sub_menu)
+        self.factions_sub = wx.Menu()
+        self.view_menu.Append(wx.ID_ANY, "Ignore Factions", self.factions_sub)
 
-        self.ignore_galmin = self.view_sub_menu.AppendRadioItem(wx.ID_ANY, "Gallente / Minmatar")
-        self.view_sub_menu.Bind(wx.EVT_MENU, self.toggleIgnoreFactions, self.ignore_galmin)
+        self.ignore_galmin = self.factions_sub.AppendRadioItem(wx.ID_ANY, "Gallente / Minmatar")
+        self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_galmin)
+        self.ignore_galmin.Check(self.options.Get("HlGalMin", False))
 
-        self.ignore_amacal = self.view_sub_menu.AppendRadioItem(wx.ID_ANY, "Amarr / Caldari")
-        self.view_sub_menu.Bind(wx.EVT_MENU, self.toggleIgnoreFactions, self.ignore_amacal)
+        self.ignore_amacal = self.factions_sub.AppendRadioItem(wx.ID_ANY, "Amarr / Caldari")
+        self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_amacal)
+        self.ignore_amacal.Check(self.options.Get("HlAmaCal", False))
 
-        self.ignore_none = self.view_sub_menu.AppendRadioItem(wx.ID_ANY, "None")
-        self.view_sub_menu.Bind(wx.EVT_MENU, self.toggleIgnoreFactions, self.ignore_none)
+        self.ignore_none = self.factions_sub.AppendRadioItem(wx.ID_ANY, "None")
+        self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_none)
+        self.ignore_none.Check(self.options.Get("HlNone", True))
+
+        # Font submenu for font scale
+        self.font_sub = wx.Menu()
+        self.view_menu.Append(wx.ID_ANY, "Font Scale", self.font_sub)
+
+        self._fontScaleMenu(config.FONT_SCALE_MIN, config.FONT_SCALE_MAX)
 
         self.view_menu.AppendSeparator()
 
         # Toggle Stay on-top
         self.stay_ontop = self.view_menu.AppendCheckItem(
-            wx.ID_ANY, 'Stay on-top'
+            wx.ID_ANY, 'Stay on-&top\tCTRL+T'
             )
-        self.view_menu.Bind(wx.EVT_MENU, self.toggleStayOnTop, self.stay_ontop)
-
-        self.menubar.Append(self.view_menu, 'View')
-
-        # Menu Defaults, saved with optstore.PersistentOptions
-        self.hl_blops.Check(self.options.Get("HlBlops", True))
-        self.show_corp.Check(self.options.Get("ShowCorp", True))
-        self.show_alliance.Check(self.options.Get("ShowAlliance", True))
-        self.show_faction.Check(self.options.Get("ShowFaction", True))
-        self.ignore_galmin.Check(self.options.Get("HlGalMin", False))
-        self.ignore_amacal.Check(self.options.Get("HlAmaCal", False))
-        self.ignore_none.Check(self.options.Get("HlNone", True))
+        self.view_menu.Bind(wx.EVT_MENU, self._toggleStayOnTop, self.stay_ontop)
         self.stay_ontop.Check(self.options.Get("StayOnTop", True))
 
-        # Define the main list control
-        self.list = wx.ListCtrl(self, wx.ID_ANY, style=wx.BORDER_NONE |
-            wx.FULL_REPAINT_ON_RESIZE | wx.LC_HRULES | wx.LC_REPORT |
-            wx.LC_SINGLE_SEL | wx.LC_VRULES
+        # Toggle Dark-Mode
+        self.dark_mode = self.view_menu.AppendCheckItem(
+            wx.ID_ANY, '&Dark Mode\tCTRL+D'
             )
-        self.list.SetName("Output List")
+        self.dark_mode.Check(self.options.Get("DarkMode", False))
+        self.view_menu.Bind(wx.EVT_MENU, self._toggleDarkMode, self.dark_mode)
+        self.use_dm = self.dark_mode.IsChecked()
 
-        # Ensure that Persistence Manager saves window location on close
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.menubar.Append(self.view_menu, 'View ')  # Added space to avoid autogenerated menu items on Mac
 
-        # Bind double click on list item to zKill link.
-        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.goToZKill, self.list)
+        # Options Menubar
+        self.opt_menu = wx.Menu()
+
+        self.review_ignore = self.opt_menu.Append(wx.ID_ANY, "&Review Ignored Entities\tCTRL+R")
+        self.opt_menu.Bind(
+            wx.EVT_MENU,
+            self._openIgnoreDialog,
+            self.review_ignore
+            )
+
+        self.menubar.Append(self.opt_menu, 'Options')
+
+        # Set the grid object
+        self.grid = wx.grid.Grid(self, wx.ID_ANY)
+        self.grid.CreateGrid(0, 0)
+        self.grid.SetName("Output List")
 
         # Allow to change window transparency using this slider.
         self.alpha_slider = wx.Slider(self, wx.ID_ANY, 250, 50, 255)
         self.alpha_slider.SetName("Transparency_Slider")
-        self.Bind(wx.EVT_SLIDER, self.setTransparency)
+        self.Bind(wx.EVT_SLIDER, self._setTransparency)
 
         # The status label shows various info and error messages.
         self.status_label = wx.StaticText(
@@ -146,30 +177,108 @@ class Frame(wx.Frame):
         self._persistMgr.SetPersistenceFile(config.GUI_CFG_FILE)
         self._persistMgr.RegisterAndRestoreAll(self)
 
-        self.setTransparency()  # Set transparency based off restored slider
+        # Column resize to trigger last column stretch to fill blank canvas.
+        self.Bind(wx.grid.EVT_GRID_COL_SIZE, self._stretchLastCol, self.grid)
+
+        # Window resize to trigger last column stretch to fill blank canvas.
+        self.Bind(wx.EVT_SIZE, self._stretchLastCol, self)
+
+        # Ensure that Persistence Manager saves window location on close
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+        # Bind double click on list item to zKill link.
+        self.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self._goToZKill, self.grid)
+
+        # Bind right click on list item to ignore character.
+        self.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self._showContextMenu, self.grid)
+
+        # Bind left click on column label to sorting
+        self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sortOutlist, self.grid)
+
+        # Set transparency based off restored slider
+        self._setTransparency()
         self.__do_layout()
 
-    def __set_properties(self):
+    def __set_properties(self, dark_toggle=None):
+        '''
+        Set the initial properties for the various widgets.
+        '''
+        # Colour Scheme Dictionaries
+        self.dark_dict = config.DARK_MODE
+        self.normal_dict = config.NORMAL_MODE
+
+        # Colour Scheme
+        if not self.options.Get("DarkMode", False):
+            self.bg_colour = self.normal_dict["BG"]
+            self.txt_colour = self.normal_dict["TXT"]
+            self.lne_colour = self.normal_dict["LNE"]
+            self.lbl_colour = self.normal_dict["LBL"]
+            self.hl1_colour = self.normal_dict["HL1"]
+        else:
+            self.bg_colour = self.dark_dict["BG"]
+            self.txt_colour = self.dark_dict["TXT"]
+            self.lne_colour = self.dark_dict["LNE"]
+            self.lbl_colour = self.dark_dict["LBL"]
+            self.hl1_colour = self.dark_dict["HL1"]
+
+
+        # Set default colors
+        self.SetBackgroundColour(self.bg_colour)
+        self.SetForegroundColour(self.txt_colour)
+        self.grid.SetDefaultCellBackgroundColour(self.bg_colour)
+        self.grid.SetDefaultCellTextColour(self.txt_colour)
+        self.grid.SetGridLineColour(self.lne_colour)
+        self.grid.SetLabelBackgroundColour(self.bg_colour)
+        self.grid.SetLabelTextColour(self.lbl_colour)
+        self.status_label.SetForegroundColour(self.lbl_colour)
+
+        # Do not reset window size etc. if only changing colour scheme.
+        if dark_toggle:
+            return
+
         self.SetTitle(config.GUI_TITLE)
-        self.SetSize((625, 400))
+        self.SetSize((720, 400))
         self.SetMenuBar(self.menubar)
-        self.list.AppendColumn("ID", format=wx.LIST_FORMAT_LEFT, width=0)
-        self.list.AppendColumn("FactionID", format=wx.LIST_FORMAT_LEFT, width=0)
-        self.list.AppendColumn("Character", format=wx.LIST_FORMAT_LEFT, width=115)
-        self.lc_corp = self.list.AppendColumn("Corporation", format=wx.LIST_FORMAT_LEFT, width=115)
-        self.lc_alliance = self.list.AppendColumn("Alliance", format=wx.LIST_FORMAT_LEFT, width=175)
-        self.lc_faction = self.list.AppendColumn("Faction", format=wx.LIST_FORMAT_LEFT, width=60)
-        self.list.AppendColumn("Last Wk", format=wx.LIST_FORMAT_CENTER, width=50)
-        self.list.AppendColumn("K - B - H", format=wx.LIST_FORMAT_CENTER, width=90)
+        # Insert columns based on parameters provided in col_def
+
+        # self.grid.CreateGrid(0, 0)
+        if self.grid.GetNumberCols() < len(self.columns):
+            self.grid.AppendCols(len(self.columns))
+        self.grid.SetColLabelSize(self.grid.GetDefaultRowSize() + 2)
+        self.grid.SetRowLabelSize(0)
+        self.grid.EnableEditing(0)
+        self.grid.DisableCellEditControl()
+        self.grid.EnableDragRowSize(0)
+        self.grid.EnableDragGridSize(0)
+        self.grid.SetSelectionMode(wx.grid.Grid.SelectRows)
+        self.grid.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_BOTTOM)
+        self.grid.ClipHorzGridLines(False)
+        # self.grid.ClipVertGridLines(False)
+        # Disable visual highlighting of selected cell to look more like listctrl
+        self.grid.SetCellHighlightPenWidth(0)
+        colidx = 0
+        for col in self.columns:
+            self.grid.SetColLabelValue(
+                col[0],  # Index
+                col[1],  # Heading
+                )
+            # self.grid.SetColSize(colidx, col[3])
+            colidx += 1
+        # Transparency slider
         self.alpha_slider.SetMinSize((100, 20))
+        # Window icon
         icon = wx.Icon()
         icon.CopyFromBitmap(wx.Bitmap(config.ICON_FILE, wx.BITMAP_TYPE_ANY))
         self.SetIcon(icon)
 
     def __do_layout(self):
+        '''
+        Assigns the various widgets to sizers and calls a number of helper
+        functions.
+        '''
         sizer_main = wx.BoxSizer(wx.VERTICAL)
         sizer_bottom = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_main.Add(self.list, 1, wx.EXPAND, 0)
+        sizer_main.Add(self.grid, 1, wx.EXPAND, 0)
         sizer_bottom.Add(self.status_label, 1, wx.ALIGN_CENTER_VERTICAL, 0)
         static_line = wx.StaticLine(self, wx.ID_ANY, style=wx.LI_VERTICAL)
         sizer_bottom.Add(static_line, 0, wx.EXPAND, 0)
@@ -177,46 +286,228 @@ class Frame(wx.Frame):
         sizer_main.Add(sizer_bottom, 0, wx.ALIGN_BOTTOM | wx.ALL | wx.EXPAND, 1)
         self.SetSizer(sizer_main)
         self.Layout()
+        self._restoreColWidth()
+        self._stretchLastCol()
+
+    def _fontScaleMenu(self, lower, upper):
+        '''
+        Populates the font scale sub menu with scale percentages
+        based on input bounds.
+
+        :param `lower`: The minimum scale represented as a decimal, e.g. 0.6
+
+        :param `upper`: The maximum scale represented as a decimal, e.g. 1.4
+        '''
+        for scale in range(lower, upper):
+            scale = scale / 10
+            self.font_sub.AppendRadioItem(wx.ID_ANY, "{:.0%}".format(scale))
+            self.font_sub.Bind(
+                wx.EVT_MENU,
+                lambda evt, scale=scale: self._setFontScale(scale, evt),
+                self.font_sub.MenuItems[-1]
+                )
+            if scale == self.options.Get("FontScale", 1):
+                self.font_sub.MenuItems[-1].Check(True)
+
+    def _setFontScale(self, scale, evt=None):
+        '''
+        Changes the font scaling and saves it in the pickle container.
+        '''
+        self.Font = self.Font.Scaled(scale)
+        self.options.Set("FontScale", scale)
+
+    def _createShowColMenuItems(self):
+        '''
+        Populates the View menu with show column toggle menu items for
+        each column that is toggleable. It uses the information provided
+        in self.columns.
+        '''
+        # For each column, create show / hide menu items, if hideable
+        self.col_menu_items = [[] for i in self.columns]
+        for col in self.columns:
+            if not col[4]:  # Do not add menu item if column not hideable
+                continue
+            index = col[0]
+            options_key = "Show" + col[1]
+            menu_name = "Show " + col[6]
+            self.col_menu_items[index] = self.view_menu.AppendCheckItem(
+                wx.ID_ANY,
+                menu_name
+                )
+            # Column show / hide, depending on user settings, if any
+            checked = self.options.Get(
+                options_key,
+                self.columns[index][5]
+                )
+            self.col_menu_items[index].Check(
+                self.options.Get(options_key, checked)
+                )
+            # Bind new menu item to toggleColumn method
+            self.view_menu.Bind(
+                wx.EVT_MENU,
+                lambda evt, index=index: self._toggleColumn(index, evt),
+                self.col_menu_items[index]
+                )
+
+    def _toggleColumn(self, index, event=None):
+        '''
+        Depending on the respective menu item state, either reveals or
+        hides a column. If it hides a column, it first stores the old
+        column width in self.options to allow for subsequent restore.
+        '''
+        try:
+            checked = self.col_menu_items[index].IsChecked()
+        except:
+            checked = False
+        col_name = self.columns[index][1]
+        if checked:
+            default_width = self.columns[index][3]
+            col_width = self.options.Get(col_name, default_width)
+            if col_width > 0:
+                self.grid.SetColSize(index, col_width)
+            else:
+                self.grid.SetColSize(index, default_width)
+        else:
+            col_width = self.grid.GetColSize(index)
+            # Only save column status if column is actually hideable
+            if self.columns[index][4]:
+                self.options.Set(col_name, col_width)
+            self.grid.HideCol(index)
+        self._stretchLastCol()
+
+    def _stretchLastCol(self, event=None):
+        '''
+        Makes sure the last column fills any blank space of the
+        grid. For this reason, the last list item of self.columns should
+        describe an empty column.
+        '''
+        grid_width = self.grid.Size.GetWidth()
+        cols_width = 0
+        for index in range(self.columns[-1][0] + 1):
+            cols_width += self.grid.GetColSize(index)
+        stretch_width = grid_width - cols_width
+        last_col_width = max(
+            self.grid.GetColSize(index) + stretch_width,
+            self.columns[index][3]
+        )
+        self.grid.SetColSize(index, last_col_width)
+        self.Layout()
+        if event is not None:
+            event.Skip(True)
 
     def updateList(self, outlist, duration=None):
+        '''
+        `updateList()` takes the output of `output_list()` in `analyze.py` (via
+        `__main__.py`) or a copy thereof stored in self.option, and uses it
+        to populate the list widget. Before it does so, it checks each
+        item in outlist against a list of ignored characters, corporations
+        and alliances. Finally, it highlights certain characters and
+        updates the statusbar message.
+
+        :param `outlist`: A list of rows with character data.
+
+        :param `duration`: Time in seconds taken to query all relevant
+        databases for each character.
+        '''
         # If updateList() gets called before outlist has been provided, do nothing
         if outlist is None:
             return
-        self.options.Set("outlist", outlist)
+        if self.grid.GetNumberRows() > 0:
+            self.grid.DeleteRows(numRows=self.grid.GetNumberRows())
+        self.grid.AppendRows(len(outlist))
+        ignored_list = self.options.Get("ignoredList", default=[])
         hl_blops = self.options.Get("HlBlops", True)
-        self.list.DeleteAllItems()
+        ignore_count = 0
+        rowidx = 0
         for r in outlist:
 
+            ignore = False
+            for rec in ignored_list:
+                if r[0] == rec[0] or r[3] == rec[0] or r[5] == rec[0]:
+                    ignore = True
+            if ignore:
+                self.grid.HideRow(rowidx)
+                ignore_count += 1
+
             # Schema depending on output_list() in analyze.py
-            id = r[0]
-            faction_id = r[1]
+            id = r[0]  # Hidden, used for zKillboard link
+            faction_id = r[1]  # Hidden, used for faction ignoring
             name = r[2]
-            corp = r[3]
-            alliance = str(r[4]) + " (" + str(r[6]) + ")" if r[4] is not None else "-"
-            faction = r[5] if r[5] is not None else "-"
-            week_kills = r[7]
-            zkill = str(r[8]) + " - " + str(r[9]) + " - " + str(r[10]) if r[8] is not None else "n.a."
-            out = [id, faction_id, name, corp, alliance, faction, week_kills, zkill]
+            corp_id = r[3]
+            corp_name = r[4]
+            alliance_id = r[5]
+            alliance_name = r[6]
+            faction = r[7] if r[7] is not None else "-"
+            allies = "{:,}".format(int(r[8]))
+
+            # Add number of allies to alliance name
+            if alliance_name is not None:
+                alliance_name = alliance_name + " (" + allies + ")"
+            else:
+                alliance_name = "-"
+
+            # zKillboard data is "n.a." unless available
+            week_kills = kills = blops_kills = hic_losses = "n.a."
+            losses = solo_ratio = sec_status = "n.a."
+
+            if r[13] is not None:
+                week_kills = "{:,}".format(int(r[9]))
+                kills = "{:,}".format(int(r[10]))
+                blops_kills = "{:,}".format(int(r[11]))
+                hic_losses = "{:,}".format(int(r[12]))
+                losses = "{:,}".format(int(r[13]))
+                solo_ratio = "{:.0%}".format(float(r[14]))
+                sec_status = "{:.1f}".format(float(r[15]))
+
+            out = [
+                id,
+                faction_id,
+                name,
+                sec_status,
+                corp_id,
+                corp_name,
+                alliance_id,
+                alliance_name,
+                faction,
+                kills,
+                losses,
+                week_kills,
+                solo_ratio,
+                blops_kills,
+                hic_losses
+                ]
 
             # Check if character belongs to a faction that should be ignored
             if faction_id != 0:
                 if config.IGNORED_FACTIONS == 2 and faction_id % 2 == 0:
-                    continue
+                    self.grid.HideRow(rowidx)
                 if config.IGNORED_FACTIONS == 1 and faction_id % 2 != 0:
-                    continue
+                    self.grid.HideRow(rowidx)
+            colidx = 0
 
-            self.list.Append(out)
+            # Cell text formatting
+            for value in out:
+                self.grid.SetCellValue(rowidx, colidx, str(value))
+                self.grid.SetCellAlignment(self.columns[colidx][2], rowidx, colidx)
+                if hl_blops and r[9] is not None and (r[11] > 0 or r[12] > 0):  # Highlight BLOPS killer & HIC pilots.
+                    self.grid.SetCellTextColour(rowidx, colidx, self.hl1_colour)
+                else:
+                    self.grid.SetCellTextColour(rowidx, colidx, self.txt_colour)
+                colidx += 1
+            rowidx += 1
 
-            if hl_blops and r[7] is not None and (r[9] > 0 or r[10] > 0):  # Highlight BLOPS killer & HIC pilots.
-                self.list.SetItemBackgroundColour(
-                    self.list.ItemCount - 1,
-                    wx.Colour(255, 189, 90)
-                    )
         if duration is not None:
             statusmsg.push_status(
-                str(len(outlist)) +
-                " characters analysed in " + str(duration) +
-                " seconds. Double click character to go to zKillboard."
+                str(len(outlist) - ignore_count) +
+                " characters analysed, in " + str(duration) +
+                " seconds (" + str(ignore_count) + " ignored). Double click " +
+                "character to go to zKillboard."
+                )
+        else:
+            statusmsg.push_status(
+                str(len(outlist) - ignore_count) + " characters analysed (" +
+                str(ignore_count) + " ignored). Double click character to go " +
+                " to zKillboard."
                 )
 
     def updateStatusbar(self, msg):
@@ -225,41 +516,137 @@ class Frame(wx.Frame):
             self.status_label.SetLabel(msg)
             self.Layout()
 
-    def goToZKill(self, event):
+    def _goToZKill(self, event):
+        rowidx = event.GetRow()
+        character_id = self.options.Get("outlist")[rowidx][0]
         webbrowser.open_new_tab(
             "https://zkillboard.com/character/" +
-            str(event.GetText())
+            str(character_id) + "/"
             )
 
-    def setTransparency(self, event=None):
+    def _showContextMenu(self, event):
+        '''
+        Gets invoked by right click on any list item and produces a
+        context menu that allows the user to add the selected character
+        to PySpy's list of "ignored characters" which will no longer be
+        shown in search results.
+        '''
+        def OnIgnore(id, name, type, e=None):
+            ignored_list = self.options.Get("ignoredList", default=[])
+            ignored_list.append([id, name, type])
+            self.options.Set("ignoredList", ignored_list)
+            self.updateList(self.options.Get("outlist", None))
+
+        rowidx = event.GetRow()
+        character_id = str(self.options.Get("outlist")[rowidx][0])
+        # Only open context menu character item right clicked, not empty line.
+        if len(character_id) > 0:
+            outlist = self.options.Get("outlist")
+            for r in outlist:
+                if str(r[0]) == character_id:
+                    character_id = r[0]
+                    character_name = r[2]
+                    corp_id = r[3]
+                    corp_name = r[4]
+                    alliance_id = r[5]
+                    alliance_name = r[6]
+                    break
+            self.menu = wx.Menu()
+            # Context menu to ignore characters, corporations and alliances.
+            item_ig_char = self.menu.Append(
+                wx.ID_ANY, "Ignore character '" + character_name + "'"
+                )
+            self.menu.Bind(
+                wx.EVT_MENU,
+                lambda evt, id=character_id, name=character_name: OnIgnore(id, name, "Character", evt),
+                item_ig_char
+                )
+
+            item_ig_corp = self.menu.Append(
+                wx.ID_ANY, "Ignore corporation: '" + corp_name + "'"
+                )
+            self.menu.Bind(
+                wx.EVT_MENU,
+                lambda evt, id=corp_id, name=corp_name: OnIgnore(id, name, "Corporation", evt),
+                item_ig_corp
+                )
+
+            if alliance_name is not None:
+                item_ig_alliance = self.menu.Append(
+                    wx.ID_ANY, "Ignore alliance: '" + alliance_name + "'"
+                    )
+                self.menu.Bind(
+                    wx.EVT_MENU,
+                    lambda evt, id=alliance_id, name=alliance_name: OnIgnore(id, name, "Alliance", evt),
+                    item_ig_alliance
+                    )
+
+            self.PopupMenu(self.menu, event.GetPosition())
+            self.menu.Destroy()
+
+    def sortOutlist(self, event=None, outlist=None, duration=None):
+        '''
+        If called by event handle, i.e. user
+        '''
+        if event is None:
+            # Default sort by character name ascending.
+            colidx = self.options.Get("SortColumn", self.columns[2][7])
+            sort_desc = self.options.Get("SortDesc", False)
+        else:
+            colidx = event.GetCol()
+            if self.options.Get("SortColumn", -1) == colidx:
+                sort_desc = not self.options.Get("SortDesc")
+            else:
+                sort_desc = True
+
+        # Use unicode characters for sort indicators
+        arrow = u"\u2193" if sort_desc else u"\u2191"
+
+        # Reset all labels
+        for col in self.columns:
+            self.grid.SetColLabelValue(col[0], col[1])
+
+        # Assign sort indicator to sort column
+        self.grid.SetColLabelValue(
+            colidx,
+            self.columns[colidx][1] + " " + arrow
+            )
+        self.options.Set("SortColumn", colidx)
+        self.options.Set("SortDesc", sort_desc)
+        event = None
+        # Sort outlist. Note: outlist columns are not the same as
+        # self.grid columns!!!
+        if outlist is None:
+            outlist = self.options.Get("outlist", False)
+
+        if outlist:
+            outlist = sortarray.sort_array(
+                outlist,
+                self.columns[colidx][7],
+                sec_col=self.columns[2][7],  # Secondary sort by name
+                prim_desc=sort_desc,
+                sec_desc=False,  # Secondary sort by name always ascending
+                case_sensitive=False
+                )
+        self.options.Set("outlist", outlist)
+        self.updateList(outlist, duration=duration)
+
+    def _setTransparency(self, event=None):
+        '''
+        Sets window transparency based off slider setting and stores
+        value in self.options.
+        '''
         alpha = self.alpha_slider.GetValue()
         self.SetTransparent(alpha)
         self.options.Set("GuiAlpha", alpha)
         self.Layout()
 
-    def OnClose(self, event):
-        self._persistMgr.SaveAndUnregister()
-        # Store check-box values in pickle container
-        self.options.Set("HlBlops", self.hl_blops.IsChecked())
-        self.options.Set("ShowCorp", self.show_corp.IsChecked())
-        self.options.Set("ShowAlliance", self.show_alliance.IsChecked())
-        self.options.Set("ShowFaction", self.show_faction.IsChecked())
-        self.options.Set("HlGalMin", self.ignore_galmin.IsChecked())
-        self.options.Set("HlAmaCal", self.ignore_amacal.IsChecked())
-        self.options.Set("HlNone", self.ignore_none.IsChecked())
-        # Delete last outlist
-        self.options.Set("outlist", None)
-        # Store version information
-        self.options.Set("version", config.CURRENT_VER)
-        # Write pickle container to disk
-        self.options.Save()
-        event.Skip()
-
-    def OnQuit(self, e):
-        self.Close()
-
     def updateAlert(self, latest_ver, cur_ver):
-        '''Gets called by chk_github_update() in chkversion.py.'''
+        '''
+        Simple dialog box to notify user when new version of PySpy is
+        available for download. Gets called by chk_github_update()
+        in chkversion.py.
+        '''
         self.ToggleWindowStyle(wx.STAY_ON_TOP)
         msgbox = wx.MessageBox(
             "PySpy " + str(latest_ver) + " is now available. You are running " +
@@ -273,41 +660,11 @@ class Frame(wx.Frame):
                 )
         self.ToggleWindowStyle(wx.STAY_ON_TOP)
 
-    def toggleHlBlops(self, e):
+    def _toggleHlBlops(self, e):
         self.options.Set("HlBlops", self.hl_blops.IsChecked())
         self.updateList(self.options.Get("outlist", None))
 
-    def toggleViewCorp(self, e):
-        if self.show_corp.IsChecked():
-            col_width = self.options.Get("colCorpWidth", 145)
-            self.list.SetColumnWidth(self.lc_corp, col_width)
-        else:
-            col_width = self.list.GetColumnWidth(self.lc_corp)
-            self.options.Set("colCorpWidth", col_width)
-            self.list.SetColumnWidth(self.lc_corp, 0)
-        self.Layout()
-
-    def toggleViewAlliance(self, e):
-        if self.show_alliance.IsChecked():
-            col_width = self.options.Get("colAllianceWidth", 210)
-            self.list.SetColumnWidth(self.lc_alliance, col_width)
-        else:
-            col_width = self.list.GetColumnWidth(self.lc_alliance)
-            self.options.Set("colAllianceWidth", col_width)
-            self.list.SetColumnWidth(self.lc_alliance, 0)
-        self.Layout()
-
-    def toggleViewFaction(self, e):
-        if self.show_faction.IsChecked():
-            col_width = self.options.Get("colFactionWidth", 90)
-            self.list.SetColumnWidth(self.lc_faction, col_width)
-        else:
-            col_width = self.list.GetColumnWidth(self.lc_faction)
-            self.options.Set("colFactionWidth", col_width)
-            self.list.SetColumnWidth(self.lc_faction, 0)
-        self.Layout()
-
-    def toggleIgnoreFactions(self, e):
+    def _toggleIgnoreFactions(self, e):
         ig_galmin = self.ignore_galmin.IsChecked()
         ig_amacal = self.ignore_amacal.IsChecked()
         ig_none = self.ignore_none.IsChecked()
@@ -322,9 +679,104 @@ class Frame(wx.Frame):
             self.options.Set("IgnoredFactions", 0)
         self.updateList(self.options.Get("outlist", None))
 
-    def toggleStayOnTop(self, e):
+    def _toggleStayOnTop(self, evt=None):
         self.options.Set("StayOnTop", self.stay_ontop.IsChecked())
         self.ToggleWindowStyle(wx.STAY_ON_TOP)
+
+    def _toggleDarkMode(self, evt=None):
+        self.options.Set("DarkMode", self.dark_mode.IsChecked())
+        self.use_dm = self.dark_mode.IsChecked()
+        self.__set_properties(dark_toggle=True)
+        self.Refresh()
+        self.Update()
+        self.updateList(self.options.Get("outlist"))
+
+    def _openAboutDialog(self, evt=None):
+        '''
+        Checks if IgnoreDialog is already open. If not, opens the dialog
+        window, otherwise brings the existing dialog window to the front.
+        '''
+        for c in self.GetChildren():
+            if c.GetName() == "AboutDialog":  # Needs to match name in ignoredialog.py
+                c.Raise()
+                return
+        aboutdialog.showAboutBox(self)
+
+    def _openIgnoreDialog(self, evt=None):
+        '''
+        Checks if IgnoreDialog is already open. If not, opens the dialog
+        window, otherwise brings the existing dialog window to the front.
+        '''
+        for c in self.GetChildren():
+            if c.GetName() == "IgnoreDialog":  # Needs to match name in ignoredialog.py
+                c.Raise()
+                return
+        ignoredialog.showIgnoreDialog(self)
+
+    def _restoreColWidth(self):
+        '''
+        Restores column width either to default or value stored from
+        previous session.
+        '''
+        for col in self.columns:
+            header = col[1]
+            # Column width is also set in _toggleColumn()
+            width = self.options.Get(header, col[3])
+            menu_item = self.col_menu_items[col[0]]
+            if menu_item == [] or menu_item.IsChecked():
+                self.grid.SetColSize(col[0], width)
+            else:
+                self.grid.SetColSize(col[0], 0)
+            pass
+
+    def _saveColumns(self):
+        '''
+        Saves custom column widths, since wxpython's Persistence Manager
+        is unable to do so for Grid widgets.
+        '''
+        for col in self.columns:
+            is_hideable = col[4]
+            default_show = col[5]
+            header = col[1]
+            options_key = "Show" + header
+            width = self.grid.GetColSize(col[0])
+            try:
+                menu_item_chk = self.col_menu_items[col[0]].IsChecked()
+            except:
+                menu_item_chk = False
+            # Only save column width for columns that are not hidden or
+            # not hideable and shown by default.
+            if menu_item_chk or (not is_hideable and default_show):
+                self.options.Set(header, width)
+            # Do not add menu item if column not hideable
+            if col[4]:
+                self.options.Set(options_key, menu_item_chk)
+            pass
+
+    def OnClose(self, event=None):
+        '''
+        Run a few clean-up tasks on close and save persistent properties.
+        '''
+        self._persistMgr.SaveAndUnregister()
+
+        # Save column toggle menu state and column width in pickle container
+        self._saveColumns()
+
+        # Store check-box values in pickle container
+        self.options.Set("HlBlops", self.hl_blops.IsChecked())
+        self.options.Set("HlGalMin", self.ignore_galmin.IsChecked())
+        self.options.Set("HlAmaCal", self.ignore_amacal.IsChecked())
+        self.options.Set("HlNone", self.ignore_none.IsChecked())
+        self.options.Set("StayOnTop", self.stay_ontop.IsChecked())
+        self.options.Set("DarkMode", self.dark_mode.IsChecked())
+        # Delete last outlist
+        self.options.Set("outlist", None)
+        # Write pickle container to disk
+        self.options.Save()
+        event.Skip() if event else False
+
+    def OnQuit(self, e):
+        self.Close()
 
 
 class App(wx.App):

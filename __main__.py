@@ -60,13 +60,19 @@ def check_name_validity(char_name):
 
 def analyze_chars(char_names):
     start_time = time.time()
-    wx.CallAfter(app.PySpy.list.DeleteAllItems)
+    wx.CallAfter(app.PySpy.grid.ClearGrid)
     try:
         outlist = analyze.main(char_names)
         duration = round(time.time() - start_time, 1)
         reportstats.ReportStats(outlist, duration).start()
         if outlist is not None:
-            wx.CallAfter(app.PySpy.updateList, outlist, duration)
+            # Need to use keyword args as sortOutlist can also get called
+            # by event handler which would pass event object as first argument.
+            wx.CallAfter(
+                app.PySpy.sortOutlist,
+                outlist=outlist,
+                duration=duration
+                )
         else:
             statusmsg.push_status(
                 "No valid character names found. Please try again..."

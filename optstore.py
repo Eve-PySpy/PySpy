@@ -67,6 +67,17 @@ class PersistentOptions():
         '''
         self._options[key] = value
 
+    def Del(self, key):
+        '''
+        Deletes specified key in the dictionary object.
+
+        :param `key`: existing key of the dictionary object;
+        '''
+        try:
+            del self._options[key]
+        except:
+            raise Exception("ERROR: no such key: " + str(key))
+
     def Save(self):
         '''
         Saves the dictionary object in a pickle file under the file name

@@ -95,31 +95,51 @@ class Query_zKill(threading.Thread):
             hic_losses = 0
             self._queue.put([kills, blops_kills, self._char_id])
             return
+
         try:
-            # Number of total kills of this toon.
+            # Number of total kills
             kills = r["shipsDestroyed"]
-        except KeyError:
+        except (KeyError, TypeError):
             kills = 0
 
         try:
-            # Number of BLOPS killed by this toon.
+            # Number of BLOPS killed
             blops_kills = r["groups"]["898"]["shipsDestroyed"]
-        except KeyError:
+        except (KeyError, TypeError):
             blops_kills = 0
 
         try:
-            # Number of HICs lost by this toon.
+            # Number of HICs lost
             hic_losses = r["groups"]["894"]["shipsLost"]
-        except KeyError:
+        except (KeyError, TypeError):
             hic_losses = 0
 
         try:
             # Kills over past 7 days
             week_kills = r["activepvp"]["kills"]["count"]
-        except KeyError:
+        except (KeyError, TypeError):
             week_kills = 0
 
+        try:
+            # Number of total losses
+            losses = r["shipsLost"]
+        except (KeyError, TypeError):
+            losses = 0
+
+        try:
+            # Ratio of solo kills to total kills
+            solo_ratio = int(r["soloKills"]) / int(r["shipsDestroyed"])
+        except (KeyError, TypeError):
+            solo_ratio = 0
+
+        try:
+            # Security status
+            sec_status = r["info"]["secStatus"]
+        except (KeyError, TypeError):
+            sec_status = 0
+
         self._queue.put(
-            [kills, blops_kills, hic_losses, week_kills, self._char_id]
+            [kills, blops_kills, hic_losses, week_kills, losses, solo_ratio,
+            sec_status, self._char_id]
             )
         return

@@ -17,8 +17,11 @@ Logger = logging.getLogger(__name__)
 
 
 def connect_db():
-    '''Create in memory database
-    @returns: connection and curser objects as conn and cur'''
+    '''
+    Create in memory database
+
+    @returns: connection and curser objects as conn and cur
+    '''
     conn = sqlite3.connect(":memory:")
     conn.isolation_level = None
     cur = conn.cursor()
@@ -28,13 +31,16 @@ def connect_db():
 
 
 def prepare_tables(conn, cur):
-    '''Create a few tables, unless they already exist. Do not close the
+    '''
+    Create a few tables, unless they already exist. Do not close the
     connection as it will continue to be used by the calling
-    function.'''
+    function.
+    '''
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS characters (char_name TEXT, char_id INT,
         corp_id INT, alliance_id INT, faction_id INT, kills INT,
-        blops_kills INT, hic_losses INT, week_kills INT)'''
+        blops_kills INT, hic_losses INT, week_kills INT, losses INT,
+        solo_ratio NUMERIC, sec_status NUMERIC)'''
         )
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS corporations (id INT, name TEXT)'''
@@ -45,18 +51,22 @@ def prepare_tables(conn, cur):
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS factions (id INT, name TEXT)'''
         )
+    # Populate this table with the 4 faction warfare factions
     cur.executemany(
         '''INSERT INTO factions (id, name) VALUES (?, ?)''',
         config.FACTION_IDS
-    )
+        )
     conn.commit()
 
 
 def write_many_to_db(conn, cur, query_string, records, keepalive=True):
-    '''Take a database connection and write records to it. Afterwards,
+    '''
+    Take a database connection and write records to it. Afterwards,
     leave the connection alive, unless keepalive=False and return the
     number of records added to the database.
-    @returns: records_added'''
+
+    @returns: records_added
+    '''
     try:
         cur.executemany(query_string, records)
         conn.commit()

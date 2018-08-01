@@ -21,7 +21,7 @@ Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
 
 
-def OnAboutBox(e):
+def showAboutBox(parent, event=None):
     # __main__.app.PySpy.ToggleWindowStyle(wx.STAY_ON_TOP)
 
     description = """
@@ -43,7 +43,7 @@ def OnAboutBox(e):
     info = wx.adv.AboutDialogInfo()
 
     info.SetIcon(wx.Icon(config.ABOUT_ICON, wx.BITMAP_TYPE_PNG))
-    info.SetName('PySpy')
+    info.SetName("AboutDialog")
     info.SetVersion(config.CURRENT_VER)
     info.SetDescription(description)
     info.SetCopyright('(C) 2018 White Russsian')
@@ -51,5 +51,3 @@ def OnAboutBox(e):
     info.SetLicence(license)
 
     wx.adv.AboutBox(info)
-
-    # __main__.app.PySpy.SetWindowStyle(wx.STAY_ON_TOP)

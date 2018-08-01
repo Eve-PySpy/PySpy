@@ -40,7 +40,7 @@ def main(char_names):
         zkill_stats = q_main.get()
         query_string = (
             '''UPDATE characters SET kills=?, blops_kills=?, hic_losses=?,
-            week_kills=?
+            week_kills=?, losses=?, solo_ratio=?, sec_status=?
             WHERE char_id=?'''
             )
         db.write_many_to_db(conn, cur, query_string, zkill_stats)
@@ -160,8 +160,14 @@ class zKillStats(threading.Thread):
             blops_kills = str(s[1])
             hic_losses = str(s[2])
             week_kills = str(s[3])
-            id = str(s[4])
-            zkill_stats.append([kills, blops_kills, hic_losses, week_kills, id])
+            losses = str(s[4])
+            solo_ratio = str(s[5])
+            sec_status = str(s[6])
+            id = str(s[7])
+            zkill_stats.append([
+                kills, blops_kills, hic_losses, week_kills, losses, solo_ratio,
+                sec_status, id
+                ])
         self._q_main.put(zkill_stats)
         return
 
@@ -169,8 +175,9 @@ class zKillStats(threading.Thread):
 def output_list(cur):
     query_string = (
         '''SELECT
-        ch.char_id, ch.faction_id, ch.char_name, co.name, al.name, fa.name,
-        ac.numid, ch.week_kills, ch.kills, ch.blops_kills, hic_losses
+        ch.char_id, ch.faction_id, ch.char_name, co.id, co.name, al.id,
+        al.name, fa.name, ac.numid, ch.week_kills, ch.kills, ch.blops_kills,
+        ch.hic_losses, ch.losses, ch.solo_ratio, ch.sec_status
         FROM characters AS ch
         LEFT JOIN alliances AS al ON ch.alliance_id = al.id
         LEFT JOIN corporations AS co ON ch.corp_id = co.id

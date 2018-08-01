@@ -8,7 +8,7 @@ webserver.
 # **********************************************************************
 import json
 import logging
-import os
+import platform
 import threading
 import time
 
@@ -36,7 +36,7 @@ class ReportStats(threading.Thread):
         self.daemon = True
         self._uuid = config.OPTIONS_OBJECT.Get("uuid")
         self._version = config.CURRENT_VER
-        self._platform = os.name
+        self._platform = platform.system()
         self._chars = str(len(outlist))
         self._duration = str(duration)
         self._sh_faction = str(config.OPTIONS_OBJECT.Get("ShowFaction", True))
