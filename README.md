@@ -62,7 +62,7 @@ PySpy allows you to specify a list of ignored characters, corporations and allia
 
 ## Ignore all Members of your NPSI Fleet
 
-For anyone using PySpy in no-purple-shoot-it (NPSI) fleets, you can tell PySpy to temporarily ignore your fleet mates by first running PySpy on all characters in your fleet chat and the selecting _Options_->_Set NPSI Ignore List_. Once the fleet is over, you can clear the list under _Options_->_Clear NPSI List_. Your custom ignore list described above will not be affected by this action.
+For anyone using PySpy in not-purple-shoot-it (NPSI) fleets, you can tell PySpy to temporarily ignore your fleet mates by first running PySpy on all characters in your fleet chat and then selecting _Options_->_Set NPSI Ignore List_. Once the fleet is over, you can clear the list under _Options_->_Clear NPSI List_. Your custom ignore list described above will not be affected by this action.
 
 ## Installation
 
