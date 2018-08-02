@@ -36,17 +36,6 @@ class OutOfBoundError(SortArrayError):
         super(SortArrayError, self).__init__(msg)
 
 
-class NothingToSortError(SortArrayError):
-    '''
-    Gets raised when there are less than two sortable objects.
-    '''
-    def __init__(self):
-        msg = (
-            "The unsorted input array does not contain sufficient sortable values."
-            )
-        super(SortArrayError, self).__init__(msg)
-
-
 def _determineApproach(array, sort_col):
     '''
     Takes an array (list of lists/tuples) and determines whether values
@@ -91,10 +80,6 @@ def _determineApproach(array, sort_col):
         sort_as_str = True
     else:
         sort_as_str = False
-
-    # If there is nothing to sort, raise error.
-    if (is_num + is_str + is_none) < 2:
-        raise NothingToSortError
 
     return sort_as_str
 

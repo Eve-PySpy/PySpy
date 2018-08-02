@@ -22,7 +22,7 @@ import statusmsg
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words wrusssian, wxpython, HRULES, VRULES, ELLIPSIZE, zkill,
 # // cSpell:words blops, Unregister, russsian, chkversion, posix,
-# // cSpell:words Gallente, Minmatar, Amarr, Caldari, ontop, hics
+# // cSpell:words Gallente, Minmatar, Amarr, Caldari, ontop, hics, npsi
 # **********************************************************************
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
@@ -146,6 +146,22 @@ class Frame(wx.Frame):
             wx.EVT_MENU,
             self._openIgnoreDialog,
             self.review_ignore
+            )
+
+        self.opt_menu.AppendSeparator()
+
+        self.ignore_all = self.opt_menu.Append(wx.ID_ANY, "&Set NPSI Ignore List\tCTRL+SHIFT+S")
+        self.opt_menu.Bind(
+            wx.EVT_MENU,
+            self._showNpsiDialog,
+            self.ignore_all
+            )
+
+        self.clear_ignore = self.opt_menu.Append(wx.ID_ANY, "&Clear NPSI Ignore List\tCTRL+SHIFT+C")
+        self.opt_menu.Bind(
+            wx.EVT_MENU,
+            self._clearNpsiList,
+            self.clear_ignore
             )
 
         self.menubar.Append(self.opt_menu, 'Options')
@@ -412,9 +428,12 @@ class Frame(wx.Frame):
         # If updateList() gets called before outlist has been provided, do nothing
         if outlist is None:
             return
+        # Clean up grid
         if self.grid.GetNumberRows() > 0:
             self.grid.DeleteRows(numRows=self.grid.GetNumberRows())
         self.grid.AppendRows(len(outlist))
+        # Add any NPSI fleet related characters to ignored_list
+        npsi_list = self.options.Get("NPSIList", default=[])
         ignored_list = self.options.Get("ignoredList", default=[])
         hl_blops = self.options.Get("HlBlops", True)
         ignore_count = 0
@@ -424,6 +443,9 @@ class Frame(wx.Frame):
             ignore = False
             for rec in ignored_list:
                 if r[0] == rec[0] or r[3] == rec[0] or r[5] == rec[0]:
+                    ignore = True
+            for rec in npsi_list:
+                if r[0] == rec[0]:
                     ignore = True
             if ignore:
                 self.grid.HideRow(rowidx)
@@ -713,6 +735,34 @@ class Frame(wx.Frame):
                 return
         ignoredialog.showIgnoreDialog(self)
 
+    def _showNpsiDialog(self, evt=None):
+        dialog = wx.MessageBox(
+            "Do you want to ignore all currently shown characters? " +
+            "You can undo this under `Options > Clear NPSI Ignore List`.",
+            "NPSI Ignore List",
+            wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION
+            )
+        if dialog == 2:  # Yes
+            npsi_list = []
+            outlist = self.options.Get("outlist", None)
+            if outlist is None:
+                return
+            for r in outlist:
+                character_id = [r[0]]  # Needs to be list to append to ignored_list
+                npsi_list.append(character_id)
+            self.options.Set("NPSIList", npsi_list)
+            self.updateList(outlist)
+
+    def _clearNpsiList(self, evt=None):
+        dialog = wx.MessageBox(
+            "Would you like to clear the current NPSI fleet ignore list?",
+            "NPSI Ignore List",
+            wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION
+            )
+        if dialog == 2:  # Yes
+            self.options.Set("NPSIList", [])
+            self.updateList(self.options.Get("outlist", None))
+
     def _restoreColWidth(self):
         '''
         Restores column width either to default or value stored from
@@ -769,8 +819,9 @@ class Frame(wx.Frame):
         self.options.Set("HlNone", self.ignore_none.IsChecked())
         self.options.Set("StayOnTop", self.stay_ontop.IsChecked())
         self.options.Set("DarkMode", self.dark_mode.IsChecked())
-        # Delete last outlist
+        # Delete last outlist and NPSIList
         self.options.Set("outlist", None)
+        self.options.Set("NPSIList", [])
         # Write pickle container to disk
         self.options.Save()
         event.Skip() if event else False

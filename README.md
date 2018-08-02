@@ -56,6 +56,14 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 
 **Current Limitations**: To avoid undue strain on zKillboard's API, PySpy will run the *Kills*, *Losses*, *Last Wk*, *Solo*, *BLOPS* and *HICs* analyses only for the first 30 characters in the list.
 
+## Ignore Certain Entities
+
+PySpy allows you to specify a list of ignored characters, corporations and alliances. To add entities to that list, right click on a search result. You can remove entities from this list under _Options_->_Review Ignored Entities_
+
+## Ignore all Members of your NPSI Fleet
+
+For anyone using PySpy in no-purple-shoot-it (NPSI) fleets, you can tell PySpy to temporarily ignore your fleet mates by first running PySpy on all characters in your fleet chat and the selecting _Options_->_Set NPSI Ignore List_. Once the fleet is over, you can clear the list under _Options_->_Clear NPSI List_. Your custom ignore list described above will not be affected by this action.
+
 ## Installation
 
 You can download the latest release for your operating system [here](https://github.com/WhiteRusssian/PySpy/releases/latest).
