@@ -25,8 +25,10 @@ def showAboutBox(parent, event=None):
     # __main__.app.PySpy.ToggleWindowStyle(wx.STAY_ON_TOP)
 
     description = """
-    PySpy is a a simple EVE Online character intel tool
-    using CCP's ESI API.
+    PySpy is an EVE Online character intel tool
+    using CCP's ESI API and a daily updated proprietary
+    database containing key statistics on approximately
+    2.4 million pilots.
 
     If you enjoy PySpy and want to show your appreciation
     to its author, you are welcome to send an ISK donation
@@ -43,7 +45,7 @@ def showAboutBox(parent, event=None):
     info = wx.adv.AboutDialogInfo()
 
     info.SetIcon(wx.Icon(config.ABOUT_ICON, wx.BITMAP_TYPE_PNG))
-    info.SetName("AboutDialog")
+    info.SetName("PySpy")
     info.SetVersion(config.CURRENT_VER)
     info.SetDescription(description)
     info.SetCopyright('(C) 2018 White Russsian')

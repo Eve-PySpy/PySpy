@@ -2,8 +2,8 @@
 # MIT licensed
 # Copyright (c) 2018 White Russsian
 # Github: <https://github.com/WhiteRusssian/PySpy>**********************
-''' This module provides connectivity to CCP's ESI API and to zKillboard's
-API.
+''' This module provides connectivity to CCP's ESI API, to zKillboard's
+API and to PySpy's own proprietary RESTful API.
 '''
 # **********************************************************************
 import json
@@ -22,6 +22,9 @@ import statusmsg
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
 
+
+# ESI Status
+# https://esi.evetech.net/ui/?version=meta#/Meta/get_status
 
 def post_req_ccp(esi_path, json_data):
     url = "https://esi.evetech.net/latest/" + esi_path + \
@@ -143,3 +146,98 @@ class Query_zKill(threading.Thread):
             sec_status, self._char_id]
             )
         return
+
+
+def post_proprietary_db(character_ids):
+    '''
+    Query PySpy's proprietary kill database for the character ids
+    provided as a list or tuple of integers. Returns a JSON containing
+    one line per character id.
+
+    :param `character_ids`: List or tuple of character ids as integers.
+    :return: JSON dictionary containing certain statistics for each id.
+    '''
+    url = "http://pyspy.pythonanywhere.com" + "/character_intel/" + "v1/"
+    headers = {
+        "Accept-Encoding": "gzip",
+        "User-Agent": "PySpy, Author: White Russsian, https://github.com/WhiteRusssian/PySpy"
+        }
+    # Character_ids is a list of tuples, which needs to be converted to dict
+    # with list as value.
+    character_ids = {"character_ids": character_ids}
+    try:
+        r = requests.post(url, headers=headers, json=character_ids)
+    except requests.exceptions.ConnectionError:
+        Logger.info("No network connection.", exc_info=True)
+        statusmsg.push_status(
+            "NETWORK ERROR: Check your internet connection and firewall settings."
+            )
+        time.sleep(5)
+        return "network_error"
+    if r.status_code != 200:
+        server_msg = json.loads(r.text)["error"]
+        Logger.info(
+            "PySpy server returned error code: " +
+            str(r.status_code) + ", saying: " + server_msg, exc_info=True
+            )
+        statusmsg.push_status(
+            "PYSPY SERVER ERROR: " + str(r.status_code) + " (" + server_msg + ")"
+            )
+        return "server_error"
+    return r.json()
+
+
+def get_ship_data():
+    '''
+    Produces a list of ship id and ship name pairs for each ship in EVE
+    Online, using ESI's universe/names endpoint.
+
+    :return: List of lists containing ship ids and related ship names.
+    '''
+    all_ship_ids = get_all_ship_ids()
+    if not isinstance(all_ship_ids, (list, tuple)) or len(all_ship_ids) < 1:
+        Logger.error("[get_ship_data] No valid ship ids provided.", exc_info=True)
+        return
+
+    url = "https://esi.evetech.net/v2/universe/names/?datasource=tranquility"
+    json_data = json.dumps(all_ship_ids)
+    try:
+        r = requests.post(url, json_data)
+    except requests.exceptions.ConnectionError:
+        Logger.error("[get_ship_data] No network connection.", exc_info=True)
+        return "network_error"
+    if r.status_code != 200:
+        server_msg = json.loads(r.text)["error"]
+        Logger.error(
+            "[get_ship_data] CCP Servers returned error code: " +
+            str(r.status_code) + ", saying: " + server_msg, exc_info=True
+            )
+        return "server_error"
+    ship_data = list(map(lambda r: [r['id'], r['name']], r.json()))
+    return ship_data
+
+
+def get_all_ship_ids():
+    '''
+    Uses ESI's insurance/prices endpoint to get all available ship ids.
+
+    :return: List of ship ids as integers.
+    '''
+    url = "https://esi.evetech.net/v1/insurance/prices/?datasource=tranquility"
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        Logger.error("[get_ship_ids] No network connection.", exc_info=True)
+        return "network_error"
+    if r.status_code != 200:
+        server_msg = json.loads(r.text)["error"]
+        Logger.error(
+            "[get_ship_ids] CCP Servers at returned error code: " +
+            str(r.status_code) + ", saying: " + server_msg, exc_info=True
+            )
+        return "server_error"
+
+    ship_ids = list(map(lambda r: str(r['type_id']), r.json()))
+    Logger.info("[get_ship_ids] Number of ship ids found: " + str(len(ship_ids)))
+    return ship_ids

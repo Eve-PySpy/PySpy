@@ -84,6 +84,7 @@ if os.path.isfile(GUI_CFG_FILE) and not os.path.isfile(OPTIONS_FILE):
     except:
         pass
 if OPTIONS_OBJECT.Get("version", 0) != CURRENT_VER:
+    print("Config file erased.")
     try:
         os.remove(GUI_CFG_FILE)
     except:
@@ -101,22 +102,25 @@ OPTIONS_OBJECT.Set("version", CURRENT_VER)
 
 # Various constants
 MAX_NAMES = 500  # The max number of char names to be processed
-ZKILL_DELAY = 0.05  # API rate limit is 10/second, pushing it a little...
-ZKILL_CALLS = 40
+ZKILL_DELAY = 0.02  # API rate limit is 10/second, pushing it a little...
+ZKILL_CALLS = 100
 GUI_TITLE = "PySpy " + CURRENT_VER
 FONT_SCALE_MIN = 7  # 7 equates to 70%
 FONT_SCALE_MAX = 13
+MAX_SHIP_DATA_AGE = 7  # The maximum age of ship data (used in db.prepare_ship_data)
+CYNO_HL_PERCENTAGE = 0.05  # The minimum cover / normal cyno probability for highlighting
 
 
 # Colour Scheme
+
 DARK_MODE = {
     "BG": wx.Colour(0, 0, 0),
-    "TXT": wx.Colour(166, 105, 33),
+    "TXT": wx.Colour(247, 160, 55),  # Yellow
     "LNE": wx.Colour(15, 15, 15),
     "LBL": wx.Colour(160, 160, 160),
-    "HL1": wx.Colour(187, 55, 46),
-    "HL2": wx.Colour(38, 104, 166),
-    "HL3": wx.Colour(30, 30, 30)
+    "HL1": wx.Colour(237, 72, 59),  # Red
+    "HL2": wx.Colour(62, 157, 250),  # Blue
+    "HL3": wx.Colour(30, 30, 30)  # Dark Grey
     }
 
 NORMAL_MODE = {
@@ -125,7 +129,7 @@ NORMAL_MODE = {
     "LNE": wx.Colour(240, 240, 240),
     "LBL": wx.Colour(32, 32, 32),
     "HL1": wx.Colour(187, 55, 46),
-    "HL2": wx.Colour(0, 170, 0),
+    "HL2": wx.Colour(38, 104, 166),
     "HL3": wx.Colour(0, 0, 170)
     }
 

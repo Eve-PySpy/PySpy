@@ -29,13 +29,16 @@ def chk_github_update():
         # Get latest version available on GitHub
         GIT_URL = "https://api.github.com/repos/WhiteRusssian/PySpy/releases/latest"
         try:
-            latest_ver = requests.get(GIT_URL).json()["tag_name"]
+            # verify=False to avoid certificate errors. This is not critical.
+            latest_ver = requests.get(GIT_URL, verify=False).json()["tag_name"]
             Logger.info(
                 "You are running " + CURRENT_VER + " and " +
                 latest_ver + " is the latest version available on GitHub."
                 )
+            config.OPTIONS_OBJECT.Set("last_update_check", datetime.date.today())
+            if latest_ver != CURRENT_VER:
+                wx.CallAfter(__main__.app.PySpy.updateAlert, latest_ver, CURRENT_VER)
         except:
             Logger.info("Could not check GitHub for potential available updates.")
-        config.OPTIONS_OBJECT.Set("last_update_check", datetime.date.today())
-        if latest_ver != CURRENT_VER:
-            wx.CallAfter(__main__.app.PySpy.updateAlert, latest_ver, CURRENT_VER)
+
+

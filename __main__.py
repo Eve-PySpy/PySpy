@@ -89,13 +89,13 @@ app = gui.App(0)  # Has to be defined before background thread starts.
 background_thread = threading.Thread(
     target=watch_clpbd,
     daemon=True
-)
+    )
 background_thread.start()
 
 update_checker = threading.Thread(
     target=chkversion.chk_github_update,
     daemon=True
-)
+    )
 update_checker.start()
 
 app.MainLoop()

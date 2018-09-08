@@ -21,6 +21,10 @@ a great [EVE Online](https://www.eveonline.com/) third-party tool for gathering 
 PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 [zKillboard API](https://github.com/zKillboard/zKillboard/wiki) and is available on Windows, macOS and Linux.
 
+In addition, PySpy uses a proprietary database which creates summary statistics for approximately 2.4 million EVE Online pilots, based on some 50 million killmails dating back to December 2007. This database is updated daily, shortly after CCP server downtime.
+
+If you enjoy using PySpy and would like to show your appreciation, please feel free to send ISK in-game to White Russsian (with 3 's'). Thank you.
+
 ## How to use PySpy
 
 1. Open PySpy.
@@ -28,18 +32,18 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 3. Wait until PySpy is done and inspect the results.
 4. Double-click a name to open the respective zKillboard in your browser.
 
-**Note**: PySpy will save its window location, size, column sizes, sorting order and transparency (slider on bottom right) and any other settings automatically and restore them the next time you launch it. If selected in the _View Menu_, PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
+**Note**: PySpy will save its window location, size, column sizes, sorting order and transparency (slider on bottom right) and any other settings automatically and restore them the next time you launch it (settings will be reset whenever you update to a new version). If selected in the _View Menu_, PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
 
 ## Information Provided by PySpy
 
 ### New Dark Mode
 <p align="center">
-  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.3_dark_screenshot.png?raw=true">
+  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.4_dark_screenshot.png?raw=true">
 </p>
 
 ### Traditional Normal Mode
 <p align="center">
-  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.3_light_screenshot.png?raw=true">
+  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.4_light_screenshot.png?raw=true">
 </p>
 
 * **Character**: Character name.
@@ -53,8 +57,16 @@ PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 * **Solo**: Ratio of solo kills over total kills.
 * **BLOPS**: Number of Black Ops Battleships (BLOPS) killed.
 * **HICs**: Number of lost Heavy Interdiction Cruisers (HIC).
+* **Last Loss**: Days since last loss.
+* **Last Kill**: Days since last kill.
+* **Avg. Attackers**: Average number of attackers per kill.
+* **Covert Cyno**: Ratio of losses where a covert cyno was fitted to total losses.
+* **Regular Cyno**: Ratio of losses where a regular cyno was fitted to total losses.
+* **Last Covert Cyno**: Ship type of most recent loss where covert cyno was fitted.
+* **Last Regular Cyno**: Ship type of most recent loss where regular cyno was fitted.
+* **Abyssal Losses**: Number of ship losses in Abyssal space.
 
-**Current Limitations**: To avoid undue strain on zKillboard's API, PySpy will run the *Kills*, *Losses*, *Last Wk*, *Solo*, *BLOPS* and *HICs* analyses only for the first 30 characters in the list.
+**Current Limitations**: To avoid undue strain on zKillboard's API, PySpy will run the *Kills*, *Losses*, *Last Wk*, *Solo*, *BLOPS* and *HICs* analyses only for the first 100 characters in the list.
 
 ## Ignore Certain Entities
 
@@ -86,9 +98,6 @@ Delete the PySpy executable and remove the following files manually:
 
 Below is a non-exhaustive list of additional features I plan to add to PySpy as and when the ESI and zKillboard APIs support them:
 
-* **Cynos**: Indicate if a character has in the past lost ships fitted with regular or covert cynos. I am currently putting together the underlying database of killmails and expect to add this feature in August.
-* **Average Attackers**: Average number of attackers across all kills a character has been involved in.
-* **Abyssal Losses**: Show number of losses in abyssal sites.
 * **Custom Highlighting**: Choose a list of characters, corproations or alliances to highlight.
 * **Standings**: Only show characters that are non-blue, i.e. neutral or hostile.
 * **Highlight New Pilots**: Highlight any pilots that have entered system since last PySpy run.
@@ -98,7 +107,7 @@ Please feel free to add a [feature request](https://github.com/WhiteRusssian/PyS
 
 ## Bug Reporting
 
-Despite PySpy's simplicity and extensive testing, you may encounter the odd bug. If so, please check if an existing [issue](https://github.com/WhiteRusssian/PySpy/issues) already describes your bug. If not, feel free to [create a new issue](https://github.com/WhiteRusssian/PySpy/issues/new?template=pyspy-bug-report.md) for your bug.
+Despite extensive testing, you may encounter the odd bug. If so, please check if an existing [issue](https://github.com/WhiteRusssian/PySpy/issues) already describes your bug. If not, feel free to [create a new issue](https://github.com/WhiteRusssian/PySpy/issues/new?template=pyspy-bug-report.md) for your bug.
 
 ## Dependencies & Acknowledgements
 

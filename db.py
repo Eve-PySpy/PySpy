@@ -5,10 +5,12 @@
 '''Establishes an in memory SQLite3 database and creates a few tables as
 well as provides a function to write records to the database.'''
 # **********************************************************************
+import datetime
 import logging
 import sqlite3
 
 import config
+import apis
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words wrusssian, sqlite, blops, russsian
 # **********************************************************************
@@ -27,6 +29,7 @@ def connect_db():
     cur = conn.cursor()
     cur.execute("PRAGMA journal_mode = TRUNCATE")
     prepare_tables(conn, cur)
+    prepare_ship_data(conn, cur)
     return conn, cur
 
 
@@ -40,7 +43,10 @@ def prepare_tables(conn, cur):
         '''CREATE TABLE IF NOT EXISTS characters (char_name TEXT, char_id INT,
         corp_id INT, alliance_id INT, faction_id INT, kills INT,
         blops_kills INT, hic_losses INT, week_kills INT, losses INT,
-        solo_ratio NUMERIC, sec_status NUMERIC)'''
+        solo_ratio NUMERIC, sec_status NUMERIC, last_loss_date INT,
+        last_kill_date INT, avg_attackers NUMERIC, covert_prob NUMERIC,
+        normal_prob NUMERIC, last_cov_ship INT, last_norm_ship INT,
+        abyssal_losses INT)'''
         )
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS corporations (id INT, name TEXT)'''
@@ -51,10 +57,31 @@ def prepare_tables(conn, cur):
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS factions (id INT, name TEXT)'''
         )
+    cur.execute(
+        '''CREATE TABLE IF NOT EXISTS ships (id INT, name TEXT)'''
+        )
     # Populate this table with the 4 faction warfare factions
     cur.executemany(
         '''INSERT INTO factions (id, name) VALUES (?, ?)''',
         config.FACTION_IDS
+        )
+    conn.commit()
+
+
+def prepare_ship_data(conn, cur):
+    '''
+    Download all ship ids and names from ESI and save in OPTIONS_OBJECT.
+    '''
+    ship_data_date = config.OPTIONS_OBJECT.Get("ship_data_date", 0)
+    max_age = config.MAX_SHIP_DATA_AGE
+    max_date = datetime.date.today() - datetime.timedelta(days=max_age)
+    if ship_data_date == 0 or ship_data_date < max_date:
+        config.OPTIONS_OBJECT.Set("ship_data", apis.get_ship_data())
+        config.OPTIONS_OBJECT.Set("ship_data_date", datetime.date.today())
+    # Populate ships table with ids and names for all ships in game
+    cur.executemany(
+        '''INSERT INTO ships (id, name) VALUES (?, ?)''',
+        config.OPTIONS_OBJECT.Get("ship_data", 0)
         )
     conn.commit()
 

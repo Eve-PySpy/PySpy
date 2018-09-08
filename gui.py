@@ -4,6 +4,7 @@
 # Github: <https://github.com/WhiteRusssian/PySpy>**********************
 '''Simple wxpython GUI with 1 frame, using persistent properties.'''
 # **********************************************************************
+import datetime
 import logging
 import os
 import sys
@@ -49,20 +50,28 @@ class Frame(wx.Frame):
             # Index, Heading, Format, Default Width, Can Toggle, Default Show, Menu Name, Outlist Column
             [0, "ID", wx.ALIGN_LEFT, 0, False, False, "", 0],
             [1, "Faction ID", wx.ALIGN_LEFT, 0, False, False, "", 1],
-            [2, "Character", wx.ALIGN_LEFT, 115, False, True, "", 2],
-            [3, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+S", 15],
+            [2, "Character", wx.ALIGN_LEFT, 100, False, True, "", 2],
+            [3, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+ALT+S", 15],
             [4, "CorpID", wx.ALIGN_LEFT, 0, False, False, "", 3],
-            [5, "Corporation", wx.ALIGN_LEFT, 115, True, True, "Cor&poration\tCTRL+P", 4],
+            [5, "Corporation", wx.ALIGN_LEFT, 100, True, True, "Cor&poration\tCTRL+ALT+P", 4],
             [6, "AllianceID", wx.ALIGN_LEFT, 0, False, False, "-", 5],
-            [7, "Alliance", wx.ALIGN_LEFT, 175, True, True, "All&iance\tCTRL+I", 6],
-            [8, "Faction", wx.ALIGN_LEFT, 60, True, True, "&Faction\tCTRL+F", 7],
-            [9, "Kills", wx.ALIGN_RIGHT, 50, True, True, "&Kills\tCTRL+K", 10],
-            [10, "Losses", wx.ALIGN_RIGHT, 50, True, True, "&Losses\tCTRL+L", 13],
-            [11, "Last Wk", wx.ALIGN_RIGHT, 50, True, True, "Last &Wk\tCTRL+W", 9],
-            [12, "Solo", wx.ALIGN_RIGHT, 50, True, True, "S&olo\tCTRL+O", 14],
-            [13, "BLOPS", wx.ALIGN_RIGHT, 50, True, True, "&BLOPS\tCTRL+B", 11],
-            [14, "HICs", wx.ALIGN_RIGHT, 50, True, False, "&HICs\tCTRL+H", 12],
-            [15, "", None, 1, False, True, ""],  # Need for _stretchLastCol()
+            [7, "Alliance", wx.ALIGN_LEFT, 150, True, True, "All&iance\tCTRL+ALT+I", 6],
+            [8, "Faction", wx.ALIGN_LEFT, 50, True, False, "&Faction\tCTRL+ALT+F", 7],
+            [9, "Kills", wx.ALIGN_RIGHT, 50, True, True, "&Kills\tCTRL+ALT+K", 10],
+            [10, "Losses", wx.ALIGN_RIGHT, 50, True, True, "&Losses\tCTRL+ALT+L", 13],
+            [11, "Last Wk", wx.ALIGN_RIGHT, 50, True, True, "Last &Wk\tCTRL+ALT+W", 9],
+            [12, "Solo", wx.ALIGN_RIGHT, 50, True, False, "S&olo\tCTRL+ALT+O", 14],
+            [13, "BLOPS", wx.ALIGN_RIGHT, 50, True, False, "&BLOPS\tCTRL+ALT+B", 11],
+            [14, "HICs", wx.ALIGN_RIGHT, 50, True, False, "&HICs\tCTRL+ALT+H", 12],
+            [15, "Last Loss", wx.ALIGN_RIGHT, 60, True, True, "Days since last Loss\tCTRL+ALT+[", 16],
+            [16, "Last Kill", wx.ALIGN_RIGHT, 60, True, True, "Days since last Kill\tCTRL+ALT+]", 17],
+            [17, "Avg. Attackers", wx.ALIGN_RIGHT, 100, True, True, "&Average Attackers\tCTRL+ALT+A", 18],
+            [18, "Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Covert Cyno Probability\tCTRL+ALT+C", 19],
+            [19, "Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Regular Cyno Probability\tCTRL+ALT+R", 20],
+            [20, "Last Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Covert Cyno Ship Loss\tCTRL+ALT+<", 21],
+            [21, "Last Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Regular Cyno Ship Loss\tCTRL+ALT+>", 22],
+            [22, "Abyssal Losses", wx.ALIGN_RIGHT, 100, True, False, "&Abyssal Losses\tCTRL+ALT+Y", 23],
+            [23, "", None, 1, False, True, ""],  # Need for _stretchLastCol()
             )
 
         # Define the menu bar and menu items
@@ -84,15 +93,6 @@ class Frame(wx.Frame):
         # View menu is platform independent
         self.view_menu = wx.Menu()
 
-        # Toggle highlighting of BLOPS kills and HIC losses
-        self.hl_blops = self.view_menu.AppendCheckItem(
-            wx.ID_ANY, '&Highlight BLOPS Kills and HIC Losses\tCTRL+SHIFT+H'
-            )
-        self.view_menu.Bind(wx.EVT_MENU, self._toggleHlBlops, self.hl_blops)
-        self.hl_blops.Check(self.options.Get("HlBlops", True))
-
-        self.view_menu.AppendSeparator()
-
         self._createShowColMenuItems()
 
         self.view_menu.AppendSeparator()
@@ -103,15 +103,37 @@ class Frame(wx.Frame):
 
         self.ignore_galmin = self.factions_sub.AppendRadioItem(wx.ID_ANY, "Gallente / Minmatar")
         self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_galmin)
-        self.ignore_galmin.Check(self.options.Get("HlGalMin", False))
+        self.ignore_galmin.Check(self.options.Get("IgnoreGalMin", False))
 
         self.ignore_amacal = self.factions_sub.AppendRadioItem(wx.ID_ANY, "Amarr / Caldari")
         self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_amacal)
-        self.ignore_amacal.Check(self.options.Get("HlAmaCal", False))
+        self.ignore_amacal.Check(self.options.Get("IgnoreAmaCal", False))
 
         self.ignore_none = self.factions_sub.AppendRadioItem(wx.ID_ANY, "None")
         self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_none)
-        self.ignore_none.Check(self.options.Get("HlNone", True))
+        self.ignore_none.Check(self.options.Get("IgnoreNone", True))
+
+
+        # Higlighting submenu for view menu
+        self.hl_sub = wx.Menu()
+        self.view_menu.Append(wx.ID_ANY, "Highlighting", self.hl_sub)
+
+        self.hl_blops = self.hl_sub.AppendRadioItem(wx.ID_ANY, "&BLOPS Kills and HIC Losses")
+        self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_blops)
+        self.hl_blops.Check(self.options.Get("HlBlops", False))
+
+        self.hl_cyno = self.hl_sub.AppendRadioItem(
+            wx.ID_ANY,
+            "Cyno Characters (>" +
+            "{:.0%}".format(config.CYNO_HL_PERCENTAGE) +
+            " cyno losses)"
+            )
+        self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_cyno)
+        self.hl_cyno.Check(self.options.Get("HlCyno", True))
+
+        self.hl_none = self.hl_sub.AppendRadioItem(wx.ID_ANY, "None")
+        self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_none)
+        self.hl_none.Check(self.options.Get("HlNone", False))
 
         # Font submenu for font scale
         self.font_sub = wx.Menu()
@@ -218,6 +240,9 @@ class Frame(wx.Frame):
     def __set_properties(self, dark_toggle=None):
         '''
         Set the initial properties for the various widgets.
+
+        :param `dark_toggle`: Boolean indicating if only the properties
+        related to the colour scheme should be set or everything.
         '''
         # Colour Scheme Dictionaries
         self.dark_dict = config.DARK_MODE
@@ -230,12 +255,14 @@ class Frame(wx.Frame):
             self.lne_colour = self.normal_dict["LNE"]
             self.lbl_colour = self.normal_dict["LBL"]
             self.hl1_colour = self.normal_dict["HL1"]
+            self.hl2_colour = self.normal_dict["HL2"]
         else:
             self.bg_colour = self.dark_dict["BG"]
             self.txt_colour = self.dark_dict["TXT"]
             self.lne_colour = self.dark_dict["LNE"]
             self.lbl_colour = self.dark_dict["LBL"]
             self.hl1_colour = self.dark_dict["HL1"]
+            self.hl2_colour = self.dark_dict["HL2"]
 
 
         # Set default colors
@@ -328,6 +355,8 @@ class Frame(wx.Frame):
     def _setFontScale(self, scale, evt=None):
         '''
         Changes the font scaling and saves it in the pickle container.
+
+        :param `scale`: Float representing the font scale.
         '''
         self.Font = self.Font.Scaled(scale)
         self.options.Set("FontScale", scale)
@@ -370,6 +399,9 @@ class Frame(wx.Frame):
         Depending on the respective menu item state, either reveals or
         hides a column. If it hides a column, it first stores the old
         column width in self.options to allow for subsequent restore.
+
+        :param `index`: Integer representing the index of the column
+        which is to shown / hidden.
         '''
         try:
             checked = self.col_menu_items[index].IsChecked()
@@ -414,8 +446,8 @@ class Frame(wx.Frame):
     def updateList(self, outlist, duration=None):
         '''
         `updateList()` takes the output of `output_list()` in `analyze.py` (via
-        `__main__.py`) or a copy thereof stored in self.option, and uses it
-        to populate the list widget. Before it does so, it checks each
+        `sortOutlist()`) or a copy thereof stored in self.option, and uses it
+        to populate the grid widget. Before it does so, it checks each
         item in outlist against a list of ignored characters, corporations
         and alliances. Finally, it highlights certain characters and
         updates the statusbar message.
@@ -435,7 +467,8 @@ class Frame(wx.Frame):
         # Add any NPSI fleet related characters to ignored_list
         npsi_list = self.options.Get("NPSIList", default=[])
         ignored_list = self.options.Get("ignoredList", default=[])
-        hl_blops = self.options.Get("HlBlops", True)
+        hl_blops = self.options.Get("HlBlops", False)
+        hl_cyno = self.options.Get("HlCyno", True)
         ignore_count = 0
         rowidx = 0
         for r in outlist:
@@ -473,13 +506,44 @@ class Frame(wx.Frame):
             losses = solo_ratio = sec_status = "n.a."
 
             if r[13] is not None:
-                week_kills = "{:,}".format(int(r[9]))
+                week_kills = "{:,}".format(int(r[9])) if int(r[9]) >0 else "-"
                 kills = "{:,}".format(int(r[10]))
-                blops_kills = "{:,}".format(int(r[11]))
-                hic_losses = "{:,}".format(int(r[12]))
+                blops_kills = "{:,}".format(int(r[11])) if int(r[11]) >0 else "-"
+                hic_losses = "{:,}".format(int(r[12])) if int(r[12]) >0 else "-"
                 losses = "{:,}".format(int(r[13]))
                 solo_ratio = "{:.0%}".format(float(r[14]))
                 sec_status = "{:.1f}".format(float(r[15]))
+
+            # PySpy proprietary data is "n.a." unless available
+            last_loss = last_kill = covert_ship = normal_ship = "n.a."
+            avg_attackers = covert_prob = normal_prob = abyssal_losses = "n.a."
+            cov_prob_float = norm_prob_float = 0
+            if r[16] is not None:
+
+                if int(r[16]) > 0:
+                    last_loss = str((
+                        datetime.date.today() -
+                        datetime.datetime.strptime(str(r[16]),'%Y%m%d').date()
+                        ).days) + "d"
+                else:
+                    last_loss = "n.a."
+
+                if int(r[17]) > 0:
+                    last_kill = str((
+                        datetime.date.today() -
+                        datetime.datetime.strptime(str(r[17]),'%Y%m%d').date()
+                        ).days) + "d"
+                else:
+                    last_kill = "n.a."
+
+                avg_attackers = "{:.1f}".format(float(r[18]))
+                cov_prob_float = r[19]
+                covert_prob = "{:.0%}".format(cov_prob_float) if cov_prob_float >0 else "-"
+                norm_prob_float = r[20]
+                normal_prob = "{:.0%}".format(norm_prob_float) if norm_prob_float >0 else "-"
+                covert_ship = r[21]
+                normal_ship = r[22]
+                abyssal_losses = r[23] if int(r[23]) >0 else "-"
 
             out = [
                 id,
@@ -496,7 +560,15 @@ class Frame(wx.Frame):
                 week_kills,
                 solo_ratio,
                 blops_kills,
-                hic_losses
+                hic_losses,
+                last_loss,
+                last_kill,
+                avg_attackers,
+                covert_prob,
+                normal_prob,
+                covert_ship,
+                normal_ship,
+                abyssal_losses
                 ]
 
             # Check if character belongs to a faction that should be ignored
@@ -508,11 +580,14 @@ class Frame(wx.Frame):
             colidx = 0
 
             # Cell text formatting
+            hl_cyno_prob = config.CYNO_HL_PERCENTAGE
             for value in out:
                 self.grid.SetCellValue(rowidx, colidx, str(value))
                 self.grid.SetCellAlignment(self.columns[colidx][2], rowidx, colidx)
                 if hl_blops and r[9] is not None and (r[11] > 0 or r[12] > 0):  # Highlight BLOPS killer & HIC pilots.
                     self.grid.SetCellTextColour(rowidx, colidx, self.hl1_colour)
+                elif hl_cyno and (cov_prob_float >= hl_cyno_prob or norm_prob_float >= hl_cyno_prob):  # Highlight BLOPS killer & HIC pilots.
+                    self.grid.SetCellTextColour(rowidx, colidx, self.hl2_colour)
                 else:
                     self.grid.SetCellTextColour(rowidx, colidx, self.txt_colour)
                 colidx += 1
@@ -682,10 +757,6 @@ class Frame(wx.Frame):
                 )
         self.ToggleWindowStyle(wx.STAY_ON_TOP)
 
-    def _toggleHlBlops(self, e):
-        self.options.Set("HlBlops", self.hl_blops.IsChecked())
-        self.updateList(self.options.Get("outlist", None))
-
     def _toggleIgnoreFactions(self, e):
         ig_galmin = self.ignore_galmin.IsChecked()
         ig_amacal = self.ignore_amacal.IsChecked()
@@ -699,6 +770,12 @@ class Frame(wx.Frame):
         if ig_none:
             config.IGNORED_FACTIONS = None  # Amarr & Caldari have uneven ids
             self.options.Set("IgnoredFactions", 0)
+        self.updateList(self.options.Get("outlist", None))
+
+    def _toggleHighlighting(self, e):
+        self.options.Set("HlBlops", self.hl_blops.IsChecked())
+        self.options.Set("HlCyno", self.hl_cyno.IsChecked())
+        self.options.Set("HlNone", self.hl_none.IsChecked())
         self.updateList(self.options.Get("outlist", None))
 
     def _toggleStayOnTop(self, evt=None):
@@ -814,9 +891,10 @@ class Frame(wx.Frame):
 
         # Store check-box values in pickle container
         self.options.Set("HlBlops", self.hl_blops.IsChecked())
-        self.options.Set("HlGalMin", self.ignore_galmin.IsChecked())
-        self.options.Set("HlAmaCal", self.ignore_amacal.IsChecked())
-        self.options.Set("HlNone", self.ignore_none.IsChecked())
+        self.options.Set("HlCyno", self.hl_cyno.IsChecked())
+        self.options.Set("IgnoreGalMin", self.ignore_galmin.IsChecked())
+        self.options.Set("IgnoreAmaCal", self.ignore_amacal.IsChecked())
+        self.options.Set("IgnoreNone", self.ignore_none.IsChecked())
         self.options.Set("StayOnTop", self.stay_ontop.IsChecked())
         self.options.Set("DarkMode", self.dark_mode.IsChecked())
         # Delete last outlist and NPSIList

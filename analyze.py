@@ -19,6 +19,7 @@ import db
 import statusmsg
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words affil, zkill, blops, qsize, numid, russsian, ccp's
+# // cSpell:words records_added
 # **********************************************************************
 Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
@@ -28,15 +29,26 @@ def main(char_names):
     conn, cur = db.connect_db()
     chars_found = get_char_ids(conn, cur, char_names)
     if chars_found > 0:
+        # Run Pyspy remote database query in seprate thread
+        tp = threading.Thread(
+            target=get_character_intel(conn, cur),
+            daemon=True
+            )
+        tp.start()
+
+        # Run zKill query in seprate thread
         char_ids = cur.execute(
             "SELECT char_id FROM characters ORDER BY char_name"
             ).fetchall()
         q_main = queue.Queue()
-        t = zKillStats(char_ids, q_main)
-        t.start()
+        tz = zKillStats(char_ids, q_main)
+        tz.start()
+
         get_char_affiliations(conn, cur)
         get_affil_names(conn, cur)
-        t.join()
+
+        # Join zKill thread
+        tz.join()
         zkill_stats = q_main.get()
         query_string = (
             '''UPDATE characters SET kills=?, blops_kills=?, hic_losses=?,
@@ -44,6 +56,9 @@ def main(char_names):
             WHERE char_id=?'''
             )
         db.write_many_to_db(conn, cur, query_string, zkill_stats)
+
+        # Join Pyspy remote database thread
+        tp.join()
         output = output_list(cur)
         conn.close()
         return output
@@ -91,7 +106,7 @@ def get_char_affiliations(conn, cur):
         '''UPDATE characters SET corp_id=?, alliance_id=?, faction_id=?
         WHERE char_id=?'''
         )
-    records_added = db.write_many_to_db(conn, cur, query_string, records)
+    db.write_many_to_db(conn, cur, query_string, records)
 
 
 def get_affil_names(conn, cur):
@@ -172,18 +187,59 @@ class zKillStats(threading.Thread):
         return
 
 
+def get_character_intel(conn, cur):
+    '''
+    Adds certain character killboard statistics derived from PySpy's
+    proprietary database to the local SQLite3 database.
+
+    :param `conn`: SQLite3 connection object.
+    :param `cur`: SQLite3 cursor object.
+    '''
+    char_ids = cur.execute("SELECT char_id FROM characters").fetchall()
+    char_intel = apis.post_proprietary_db(char_ids)
+    records = ()
+    for r in char_intel:
+        char_id = r["character_id"]
+        last_loss_date = r["last_loss_date"] if r["last_loss_date"] is not None else 0
+        last_kill_date = r["last_kill_date"] if r["last_kill_date"] is not None else 0
+        avg_attackers = r["avg_attackers"] if r["avg_attackers"] is not None else 0
+        covert_prob = r["covert_prob"] if r["covert_prob"] is not None else 0
+        normal_prob = r["normal_prob"] if r["normal_prob"] is not None else 0
+        last_cov_ship = r["last_cov_ship"] if r["last_cov_ship"] is not None else 0
+        last_norm_ship = r["last_norm_ship"] if r["last_norm_ship"] is not None else 0
+        abyssal_losses = r["abyssal_losses"] if r["abyssal_losses"] is not None else 0
+
+        records = records + ((
+            last_loss_date, last_kill_date, avg_attackers, covert_prob,
+            normal_prob, last_cov_ship, last_norm_ship, abyssal_losses, char_id
+            ), )
+
+    query_string = (
+        '''UPDATE characters SET last_loss_date=?, last_kill_date=?,
+        avg_attackers=?, covert_prob=?, normal_prob=?,
+        last_cov_ship=?, last_norm_ship=?, abyssal_losses=?
+        WHERE char_id=?'''
+        )
+    db.write_many_to_db(conn, cur, query_string, records)
+
+
 def output_list(cur):
     query_string = (
         '''SELECT
         ch.char_id, ch.faction_id, ch.char_name, co.id, co.name, al.id,
         al.name, fa.name, ac.numid, ch.week_kills, ch.kills, ch.blops_kills,
-        ch.hic_losses, ch.losses, ch.solo_ratio, ch.sec_status
+        ch.hic_losses, ch.losses, ch.solo_ratio, ch.sec_status,
+        ch.last_loss_date, ch.last_kill_date,
+        ch.avg_attackers, ch.covert_prob, ch.normal_prob,
+        IFNULL(cs.name,'-'), IFNULL(ns.name,'-'), ch.abyssal_losses
         FROM characters AS ch
         LEFT JOIN alliances AS al ON ch.alliance_id = al.id
         LEFT JOIN corporations AS co ON ch.corp_id = co.id
         LEFT JOIN factions AS fa ON ch.faction_id = fa.id
-        LEFT JOIN (SELECT alliance_id, COUNT(alliance_id) AS numid FROM characters GROUP BY alliance_id) AS ac ON
-        ch.alliance_id = ac.alliance_id
+        LEFT JOIN (SELECT alliance_id, COUNT(alliance_id) AS numid FROM characters GROUP BY alliance_id)
+            AS ac ON ch.alliance_id = ac.alliance_id
+        LEFT JOIN ships AS cs ON ch.last_cov_ship = cs.id
+        LEFT JOIN ships AS ns ON ch.last_norm_ship = ns.id
         ORDER BY ch.char_name'''
         )
     return cur.execute(query_string).fetchall()
