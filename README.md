@@ -15,8 +15,7 @@
 
 ## Background
 
-PySpy was born out of frustration over the *death* of [Pirate's Little Helper](http://eve-plh.com/#/home),
-a great [EVE Online](https://www.eveonline.com/) third-party tool for gathering useful information on character names from the in-game *local chat* window.
+PySpy is a fast and simple character intel tool for [EVE Online](https://www.eveonline.com/). Within seconds, PySpy gathers useful information on character names from the in-game *local chat* window.
 
 PySpy connects to [CCP's ESI API](https://esi.evetech.net/ui/) and the
 [zKillboard API](https://github.com/zKillboard/zKillboard/wiki) and is available on Windows, macOS and Linux.
