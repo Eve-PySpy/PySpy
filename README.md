@@ -1,5 +1,7 @@
 <!--- // cSpell:words killboard, blops, hics, killboard's, cynos, ccp's, pyspy, psf's, pyperclip, pyinstaller, executables, jojo, unported, killmails --->
 
+# ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `I WILL BE DISCONTINUING THE DAILY KILLMAIL SERVER UPDATES BY THE END OF 2019. Get in touch if you would like to take over. You will need some knowledge in Python, SQLite, and MongoDB. Once setup, it is 100% automatic and extremely low maintenance. I am running this on a Mac Mini but you can make it work on Windows or Linux, too.`
+
 # PySpy - A simple EVE Online character intel tool using CCP's ESI API
 
 <p align="left">
