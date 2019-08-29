@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 '''SortArray() provides functionality to sort an array (list of lists
 or tuples) containing string or numeric values (or a mix thereof).
 Ability to sort by two "columns", to break a tie in the primary sort

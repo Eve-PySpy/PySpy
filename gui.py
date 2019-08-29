@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 '''Simple wxpython GUI with 1 frame, using persistent properties.'''
 # **********************************************************************
 import datetime

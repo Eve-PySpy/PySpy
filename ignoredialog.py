@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 ''' Dialog to view and remove entities from PySpy's list of ignored
 characters, corporations and alliances.
 '''

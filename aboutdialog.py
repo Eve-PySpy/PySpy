@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 '''The About Dialog for PySpy's GUI. OnAboutBox() gets called by the GUI
 module.'''
 # **********************************************************************
@@ -49,7 +49,7 @@ def showAboutBox(parent, event=None):
     info.SetVersion(config.CURRENT_VER)
     info.SetDescription(description)
     info.SetCopyright('(C) 2018 White Russsian')
-    info.SetWebSite('https://github.com/WhiteRusssian/PySpy')
+    info.SetWebSite('https://github.com/Eve-PySpy/PySpy')
     info.SetLicence(license)
 
     wx.adv.AboutBox(info)

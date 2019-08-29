@@ -38,3 +38,6 @@ MANIFEST
 *.manifest
 # *.spec
 build/
+
+# Jetbrains IDE stuff
+.idea/

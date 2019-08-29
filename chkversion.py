@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 ''' Checks if there is a later version of PySpy available on GitHub.'''
 # **********************************************************************
 import logging.config
@@ -27,7 +27,7 @@ def chk_github_update():
     last_check = config.OPTIONS_OBJECT.Get("last_update_check", 0)
     if last_check == 0 or last_check < datetime.date.today():
         # Get latest version available on GitHub
-        GIT_URL = "https://api.github.com/repos/WhiteRusssian/PySpy/releases/latest"
+        GIT_URL = "https://api.github.com/repos/Eve-PySpy/PySpy/releases/latest"
         try:
             # verify=False to avoid certificate errors. This is not critical.
             latest_ver = requests.get(GIT_URL, verify=False).json()["tag_name"]

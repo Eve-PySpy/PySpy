@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 '''Establishes an in memory SQLite3 database and creates a few tables as
 well as provides a function to write records to the database.'''
 # **********************************************************************

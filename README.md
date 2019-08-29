@@ -1,19 +1,17 @@
 <!--- // cSpell:words killboard, blops, hics, killboard's, cynos, ccp's, pyspy, psf's, pyperclip, pyinstaller, executables, jojo, unported, killmails --->
 
-# ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `I WILL BE DISCONTINUING THE DAILY KILLMAIL SERVER UPDATES BY THE END OF 2019. Get in touch if you would like to take over. You will need some knowledge in Python, SQLite, and MongoDB. Once setup, it is 100% automatic and extremely low maintenance. I am running this on a Mac Mini but you can make it work on Windows or Linux, too.`
-
 # PySpy - A simple EVE Online character intel tool using CCP's ESI API
 
 <p align="left">
-  <a href=https://github.com/WhiteRusssian/PySpy/releases/latest>
+  <a href=https://github.com/Eve-PySpy/PySpy/releases/latest>
     <img alt="Current Version" src="https://img.shields.io/github/release/whiterusssian/pyspy.svg">
   </a>
-  <a href=https://github.com/WhiteRusssian/PySpy/releases/latest>
+  <a href=https://github.com/Eve-PySpy/PySpy/releases/latest>
     <img alt="Number of releases downloaded" src="https://img.shields.io/github/downloads/WhiteRusssian/PySpy/total.svg">
   </a>
 </p>
 
-**Download the latest release [here](https://github.com/WhiteRusssian/PySpy/releases/latest).**
+**Download the latest release [here](https://github.com/Eve-PySpy/PySpy/releases/latest).**
 
 ## Background
 
@@ -39,12 +37,12 @@ If you enjoy using PySpy and would like to show your appreciation, please feel f
 
 ### New Dark Mode
 <p align="center">
-  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.4_dark_screenshot.png?raw=true">
+  <img alt="PySpy in action" src="https://github.com/Eve-PySpy/PySpy/blob/master/assets/v0.4_dark_screenshot.png?raw=true">
 </p>
 
 ### Traditional Normal Mode
 <p align="center">
-  <img alt="PySpy in action" src="https://github.com/WhiteRusssian/PySpy/blob/master/assets/v0.4_light_screenshot.png?raw=true">
+  <img alt="PySpy in action" src="https://github.com/Eve-PySpy/PySpy/blob/master/assets/v0.4_light_screenshot.png?raw=true">
 </p>
 
 * **Character**: Character name.
@@ -79,11 +77,11 @@ For anyone using PySpy in not-purple-shoot-it (NPSI) fleets, you can tell PySpy 
 
 ## Installation
 
-You can download the latest release for your operating system [here](https://github.com/WhiteRusssian/PySpy/releases/latest).
+You can download the latest release for your operating system [here](https://github.com/Eve-PySpy/PySpy/releases/latest).
 
 PySpy comes as a single-file executable both in Windows and macOS. On both platforms, you can run PySpy from any folder location you like.
 
-On Linux, you can run PySpy like any other Python3 script. PySpy was developed on Python 3.6.5 but should run on any other Python3 version, so long as you install the required packages listed in [requirements.txt](https://github.com/WhiteRusssian/PySpy/blob/master/requirements.txt).
+On Linux, you can run PySpy like any other Python3 script. PySpy was developed on Python 3.6.5 but should run on any other Python3 version, so long as you install the required packages listed in [requirements.txt](https://github.com/Eve-PySpy/PySpy/blob/master/requirements.txt).
 
 **Note**: PySpy automatically checks for updates on launch and will notify you if a new version is available.
 
@@ -104,7 +102,7 @@ Below is a non-exhaustive list of additional features I plan to add to PySpy as 
 * **Highlight New Pilots**: Highlight any pilots that have entered system since last PySpy run.
 * **Improved GUI**: The current GUI is very basic and while it works, I do appreciate that it is not ideal for people who cannot use it on a second screen but actually have to overlay it on-top of their EVE client.
 
-Please feel free to add a [feature request](https://github.com/WhiteRusssian/PySpy/issues/new?template=pyspy-feature-request.md) for any improvements you would like to see in future releases.
+Please feel free to add a [feature request](https://github.com/Eve-PySpy/PySpy/issues/new?template=pyspy-feature-request.md) for any improvements you would like to see in future releases.
 
 ## Bug Reporting
 

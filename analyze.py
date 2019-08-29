@@ -1,7 +1,7 @@
 # !/usr/local/bin/python3.6
 # MIT licensed
 # Copyright (c) 2018 White Russsian
-# Github: <https://github.com/WhiteRusssian/PySpy>**********************
+# Github: <https://github.com/Eve-PySpy/PySpy>**********************
 ''' The primary function is main(), which takes a set of EVE Online
 character names and gathers useful information from CCP's ESI API and
 zKIllboard's API, to be stored in a temporary in-memory SQLite3 database.
