@@ -41,3 +41,6 @@ build/
 
 # Jetbrains IDE stuff
 .idea/
+
+# venv
+venv/

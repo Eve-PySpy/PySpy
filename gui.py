@@ -7,16 +7,16 @@
 import datetime
 import logging
 import os
-import sys
-import time
 import webbrowser
 
 import wx
 import wx.grid as WXG
 import wx.lib.agw.persist as pm
 
-import aboutdialog
 import config
+
+import aboutdialog
+import highlightdialog
 import ignoredialog
 import sortarray
 import statusmsg
@@ -113,27 +113,22 @@ class Frame(wx.Frame):
         self.factions_sub.Bind(wx.EVT_MENU, self._toggleIgnoreFactions, self.ignore_none)
         self.ignore_none.Check(self.options.Get("IgnoreNone", True))
 
-
         # Higlighting submenu for view menu
         self.hl_sub = wx.Menu()
         self.view_menu.Append(wx.ID_ANY, "Highlighting", self.hl_sub)
 
-        self.hl_blops = self.hl_sub.AppendRadioItem(wx.ID_ANY, "&BLOPS Kills and HIC Losses")
+        self.hl_blops = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&BLOPS Kills and HIC Losses\t(red)")
         self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_blops)
         self.hl_blops.Check(self.options.Get("HlBlops", False))
 
-        self.hl_cyno = self.hl_sub.AppendRadioItem(
+        self.hl_cyno = self.hl_sub.AppendCheckItem(
             wx.ID_ANY,
             "Cyno Characters (>" +
             "{:.0%}".format(config.CYNO_HL_PERCENTAGE) +
-            " cyno losses)"
+            " cyno losses)\t(blue)"
             )
         self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_cyno)
         self.hl_cyno.Check(self.options.Get("HlCyno", True))
-
-        self.hl_none = self.hl_sub.AppendRadioItem(wx.ID_ANY, "None")
-        self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_none)
-        self.hl_none.Check(self.options.Get("HlNone", False))
 
         # Font submenu for font scale
         self.font_sub = wx.Menu()
@@ -169,6 +164,13 @@ class Frame(wx.Frame):
             self._openIgnoreDialog,
             self.review_ignore
             )
+
+        self.review_highlight = self.opt_menu.Append(wx.ID_ANY, "&Review Highlighted Entities\tno shortcut")
+        self.opt_menu.Bind(
+            wx.EVT_MENU,
+            self._openHightlightDialog,
+            self.review_highlight
+        )
 
         self.opt_menu.AppendSeparator()
 
@@ -263,7 +265,6 @@ class Frame(wx.Frame):
             self.lbl_colour = self.dark_dict["LBL"]
             self.hl1_colour = self.dark_dict["HL1"]
             self.hl2_colour = self.dark_dict["HL2"]
-
 
         # Set default colors
         self.SetBackgroundColour(self.bg_colour)
@@ -775,7 +776,6 @@ class Frame(wx.Frame):
     def _toggleHighlighting(self, e):
         self.options.Set("HlBlops", self.hl_blops.IsChecked())
         self.options.Set("HlCyno", self.hl_cyno.IsChecked())
-        self.options.Set("HlNone", self.hl_none.IsChecked())
         self.updateList(self.options.Get("outlist", None))
 
     def _toggleStayOnTop(self, evt=None):
@@ -792,11 +792,11 @@ class Frame(wx.Frame):
 
     def _openAboutDialog(self, evt=None):
         '''
-        Checks if IgnoreDialog is already open. If not, opens the dialog
+        Checks if AboutDialog is already open. If not, opens the dialog
         window, otherwise brings the existing dialog window to the front.
         '''
         for c in self.GetChildren():
-            if c.GetName() == "AboutDialog":  # Needs to match name in ignoredialog.py
+            if c.GetName() == "AboutDialog":  # Needs to match name in aboutdialog.py
                 c.Raise()
                 return
         aboutdialog.showAboutBox(self)
@@ -811,6 +811,17 @@ class Frame(wx.Frame):
                 c.Raise()
                 return
         ignoredialog.showIgnoreDialog(self)
+
+    def _openHightlightDialog(self, evt=None):
+        '''
+        Checks if HightlightDialog is already open. If not, opens the dialog
+        window, otherwise brings the existing dialog window to the front.
+        '''
+        for c in self.GetChildren():
+            if c.GetName() == "HighlightDialog":  # Needs to match name in highlightdialog.py
+                c.Raise()
+                return
+        highlightdialog.showHighlightDialog(self)
 
     def _showNpsiDialog(self, evt=None):
         dialog = wx.MessageBox(

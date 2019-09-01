@@ -34,6 +34,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 # If application is frozen executable
 if getattr(sys, 'frozen', False):
     ABOUT_ICON = resource_path("pyspy_mid.png")
