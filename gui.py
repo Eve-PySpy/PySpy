@@ -49,29 +49,30 @@ class Frame(wx.Frame):
         self.columns = (
             # Index, Heading, Format, Default Width, Can Toggle, Default Show, Menu Name, Outlist Column
             [0, "ID", wx.ALIGN_LEFT, 0, False, False, "", 0],
-            [1, "Faction ID", wx.ALIGN_LEFT, 0, False, False, "", 1],
-            [2, "Character", wx.ALIGN_LEFT, 100, False, True, "", 2],
-            [3, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+ALT+S", 15],
-            [4, "CorpID", wx.ALIGN_LEFT, 0, False, False, "", 3],
-            [5, "Corporation", wx.ALIGN_LEFT, 100, True, True, "Cor&poration\tCTRL+ALT+P", 4],
-            [6, "AllianceID", wx.ALIGN_LEFT, 0, False, False, "-", 5],
-            [7, "Alliance", wx.ALIGN_LEFT, 150, True, True, "All&iance\tCTRL+ALT+I", 6],
-            [8, "Faction", wx.ALIGN_LEFT, 50, True, False, "&Faction\tCTRL+ALT+F", 7],
-            [9, "Kills", wx.ALIGN_RIGHT, 50, True, True, "&Kills\tCTRL+ALT+K", 10],
-            [10, "Losses", wx.ALIGN_RIGHT, 50, True, True, "&Losses\tCTRL+ALT+L", 13],
-            [11, "Last Wk", wx.ALIGN_RIGHT, 50, True, True, "Last &Wk\tCTRL+ALT+W", 9],
-            [12, "Solo", wx.ALIGN_RIGHT, 50, True, False, "S&olo\tCTRL+ALT+O", 14],
-            [13, "BLOPS", wx.ALIGN_RIGHT, 50, True, False, "&BLOPS\tCTRL+ALT+B", 11],
-            [14, "HICs", wx.ALIGN_RIGHT, 50, True, False, "&HICs\tCTRL+ALT+H", 12],
-            [15, "Last Loss", wx.ALIGN_RIGHT, 60, True, True, "Days since last Loss\tCTRL+ALT+[", 16],
-            [16, "Last Kill", wx.ALIGN_RIGHT, 60, True, True, "Days since last Kill\tCTRL+ALT+]", 17],
-            [17, "Avg. Attackers", wx.ALIGN_RIGHT, 100, True, True, "&Average Attackers\tCTRL+ALT+A", 18],
-            [18, "Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Covert Cyno Probability\tCTRL+ALT+C", 19],
-            [19, "Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Regular Cyno Probability\tCTRL+ALT+R", 20],
-            [20, "Last Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Covert Cyno Ship Loss\tCTRL+ALT+<", 21],
-            [21, "Last Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Regular Cyno Ship Loss\tCTRL+ALT+>", 22],
-            [22, "Abyssal Losses", wx.ALIGN_RIGHT, 100, True, False, "&Abyssal Losses\tCTRL+ALT+Y", 23],
-            [23, "", None, 1, False, True, ""],  # Need for _stretchLastCol()
+            [1, "Warning", wx.ALIGN_LEFT, 60, True, True, "Warning"],
+            [2, "Faction ID", wx.ALIGN_LEFT, 0, False, False, "", 1],
+            [3, "Character", wx.ALIGN_LEFT, 100, False, True, "", 2],
+            [4, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+ALT+S", 15],
+            [5, "CorpID", wx.ALIGN_LEFT, 0, False, False, "", 3],
+            [6, "Corporation", wx.ALIGN_LEFT, 100, True, True, "Cor&poration\tCTRL+ALT+P", 4],
+            [7, "AllianceID", wx.ALIGN_LEFT, 0, False, False, "-", 5],
+            [8, "Alliance", wx.ALIGN_LEFT, 150, True, True, "All&iance\tCTRL+ALT+I", 6],
+            [9, "Faction", wx.ALIGN_LEFT, 50, True, False, "&Faction\tCTRL+ALT+F", 7],
+            [10, "Kills", wx.ALIGN_RIGHT, 50, True, True, "&Kills\tCTRL+ALT+K", 10],
+            [11, "Losses", wx.ALIGN_RIGHT, 50, True, True, "&Losses\tCTRL+ALT+L", 13],
+            [12, "Last Wk", wx.ALIGN_RIGHT, 50, True, True, "Last &Wk\tCTRL+ALT+W", 9],
+            [13, "Solo", wx.ALIGN_RIGHT, 50, True, False, "S&olo\tCTRL+ALT+O", 14],
+            [14, "BLOPS", wx.ALIGN_RIGHT, 50, True, False, "&BLOPS\tCTRL+ALT+B", 11],
+            [15, "HICs", wx.ALIGN_RIGHT, 50, True, False, "&HICs\tCTRL+ALT+H", 12],
+            [16, "Last Loss", wx.ALIGN_RIGHT, 60, True, True, "Days since last Loss\tCTRL+ALT+[", 16],
+            [17, "Last Kill", wx.ALIGN_RIGHT, 60, True, True, "Days since last Kill\tCTRL+ALT+]", 17],
+            [18, "Avg. Attackers", wx.ALIGN_RIGHT, 100, True, True, "&Average Attackers\tCTRL+ALT+A", 18],
+            [19, "Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Covert Cyno Probability\tCTRL+ALT+C", 19],
+            [20, "Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Regular Cyno Probability\tCTRL+ALT+R", 20],
+            [21, "Last Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Covert Cyno Ship Loss\tCTRL+ALT+<", 21],
+            [22, "Last Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Regular Cyno Ship Loss\tCTRL+ALT+>", 22],
+            [23, "Abyssal Losses", wx.ALIGN_RIGHT, 100, True, False, "&Abyssal Losses\tCTRL+ALT+Y", 23],
+            [24, "", None, 1, False, True, ""],  # Need for _stretchLastCol()
             )
 
         # Define the menu bar and menu items
@@ -117,9 +118,13 @@ class Frame(wx.Frame):
         self.hl_sub = wx.Menu()
         self.view_menu.Append(wx.ID_ANY, "Highlighting", self.hl_sub)
 
-        self.hl_blops = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&BLOPS Kills and HIC Losses\t(red)")
+        self.hl_blops = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&BLOPS Kills\t(red)")
         self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_blops)
-        self.hl_blops.Check(self.options.Get("HlBlops", False))
+        self.hl_blops.Check(self.options.Get("HlBlops", True))
+
+        self.hl_hic = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&HIC Losses\t(red)")
+        self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_hic)
+        self.hl_hic.Check(self.options.Get("HlHic", True))
 
         self.hl_cyno = self.hl_sub.AppendCheckItem(
             wx.ID_ANY,
@@ -444,6 +449,19 @@ class Frame(wx.Frame):
         if event is not None:
             event.Skip(True)
 
+    def appendString(self, org, app):
+        """
+        Appends a String to another string with a "+" if the org string is not "".
+
+        :param org: Original String
+        :param app: String which is to be appended to the org string
+        :return:
+        """
+        if org == "":
+            return app
+        else:
+            return org + " + " + app
+
     def updateList(self, outlist, duration=None):
         '''
         `updateList()` takes the output of `output_list()` in `analyze.py` (via
@@ -468,7 +486,8 @@ class Frame(wx.Frame):
         # Add any NPSI fleet related characters to ignored_list
         npsi_list = self.options.Get("NPSIList", default=[])
         ignored_list = self.options.Get("ignoredList", default=[])
-        hl_blops = self.options.Get("HlBlops", False)
+        hl_blops = self.options.Get("HlBlops", True)
+        hl_hic = self.options.Get("HlHic", True)
         hl_cyno = self.options.Get("HlCyno", True)
         ignore_count = 0
         rowidx = 0
@@ -548,6 +567,7 @@ class Frame(wx.Frame):
 
             out = [
                 id,
+                "",
                 faction_id,
                 name,
                 sec_status,
@@ -583,13 +603,22 @@ class Frame(wx.Frame):
             # Cell text formatting
             hl_cyno_prob = config.CYNO_HL_PERCENTAGE
             for value in out:
+                color = False
                 self.grid.SetCellValue(rowidx, colidx, str(value))
                 self.grid.SetCellAlignment(self.columns[colidx][2], rowidx, colidx)
-                if hl_blops and r[9] is not None and (r[11] > 0 or r[12] > 0):  # Highlight BLOPS killer & HIC pilots.
+                if hl_blops and r[9] is not None and r[11] > 0:  # Highlight BLOPS killer & HIC pilots.
                     self.grid.SetCellTextColour(rowidx, colidx, self.hl1_colour)
-                elif hl_cyno and (cov_prob_float >= hl_cyno_prob or norm_prob_float >= hl_cyno_prob):  # Highlight BLOPS killer & HIC pilots.
+                    out[1] = self.appendString(out[1], "BLOPS")
+                    color = True
+                if hl_hic and r[9] is not None and r[12] > 0:
+                    self.grid.SetCellTextColour(rowidx, colidx, self.hl1_colour)
+                    out[1] = self.appendString(out[1], "HIC")
+                    color = True
+                if hl_cyno and (cov_prob_float >= hl_cyno_prob or norm_prob_float >= hl_cyno_prob):  # Highlight BLOPS killer & HIC pilots.
                     self.grid.SetCellTextColour(rowidx, colidx, self.hl2_colour)
-                else:
+                    out[1] = self.appendString(out[1], "CYNO")
+                    color = True
+                if not color:
                     self.grid.SetCellTextColour(rowidx, colidx, self.txt_colour)
                 colidx += 1
             rowidx += 1
@@ -776,6 +805,7 @@ class Frame(wx.Frame):
     def _toggleHighlighting(self, e):
         self.options.Set("HlBlops", self.hl_blops.IsChecked())
         self.options.Set("HlCyno", self.hl_cyno.IsChecked())
+        self.options.Set("HlHic", self.hl_hic.IsChecked())
         self.updateList(self.options.Get("outlist", None))
 
     def _toggleStayOnTop(self, evt=None):
