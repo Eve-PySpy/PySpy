@@ -634,7 +634,7 @@ class Frame(wx.Frame):
                     color = True
 
                 for entry in highlighted_list:  # Highlight chars from highlight list
-                    if hl_list and (entry[1] == out[3] or entry[1] == out[6] or entry[1] == out[8]):
+                    if hl_list and (entry[1] == out[3] or entry[1] == out[6]or entry[1] == out[8][:-4]):
                         self.grid.SetCellTextColour(rowidx, colidx, self.hl3_colour)
                         color = True
 
@@ -692,6 +692,13 @@ class Frame(wx.Frame):
             self.options.Set("highlightedList", highlighted_list)
             self.updateList(self.options.Get("outlist", None))
 
+        def OnDeHighlight(id, name, type, e=None):
+            highlighted_list = self.options.Get("highlightedList", default=[])
+            highlighted_list.remove([id, name, type])
+            self.options.Set("highlightedList", highlighted_list)
+            self.updateList(self.options.Get("outlist", None))
+
+        highlighted_list = self.options.Get("highlightedList", default=[])
         rowidx = event.GetRow()
         character_id = str(self.options.Get("outlist")[rowidx][0])
         # Only open context menu character item right clicked, not empty line.
@@ -738,33 +745,76 @@ class Frame(wx.Frame):
 
             self.menu.AppendSeparator()
 
+            hl_char = False
+            hl_corp = False
+            hl_alliance = False
+
+            for entry in highlighted_list:
+                if entry[1] == self.options.Get("outlist")[rowidx][2]:
+                    hl_char = True
+                if entry[1] == self.options.Get("outlist")[rowidx][4]:
+                    hl_corp = True
+                if alliance_name is not None:
+                    if entry[1] == self.options.Get("outlist")[rowidx][6]:
+                        hl_alliance = True
+
             # Context menu to highlight characters, corporations and alliances
-            item_hl_char = self.menu.Append(
-                wx.ID_ANY, "Highlight character '" + character_name + "'"
-            )
-            self.menu.Bind(
-                wx.EVT_MENU,
-                lambda evt, id=character_id, name=character_name: OnHighlight(id, name, "Character", evt),
-                item_hl_char
-            )
-
-            item_hl_corp = self.menu.Append(
-                wx.ID_ANY, "Highlight corporation '" + corp_name + "'"
-            )
-            self.menu.Bind(
-                wx.EVT_MENU,
-                lambda evt, id=corp_id, name=corp_name: OnHighlight(id, name, "Corporation", evt),
-                item_hl_corp
-            )
-
-            if alliance_name is not None:
-                item_hl_alliance = self.menu.Append(
-                    wx.ID_ANY, "Highlight alliance: '" + alliance_name + "'"
-                    )
+            if not hl_char:
+                item_hl_char = self.menu.Append(
+                    wx.ID_ANY, "Highlight character '" + character_name + "'"
+                )
+                self.menu.Bind(
+                   wx.EVT_MENU,
+                   lambda evt, id=character_id, name=character_name: OnHighlight(id, name, "Character", evt),
+                    item_hl_char
+                )
+            else:
+                item_hl_char = self.menu.Append(
+                    wx.ID_ANY, "Stop highlighting character '" + character_name + "'"
+                )
                 self.menu.Bind(
                     wx.EVT_MENU,
-                    lambda evt, id=alliance_id, name=alliance_name: OnHighlight(id, name, "Alliance", evt),
-                    item_hl_alliance
+                    lambda evt, id=character_id, name=character_name: OnDeHighlight(id, name, "Character", evt),
+                    item_hl_char
+                )
+
+            if not hl_corp:
+                item_hl_corp = self.menu.Append(
+                    wx.ID_ANY, "Highlight corporation '" + corp_name + "'"
+                )
+                self.menu.Bind(
+                    wx.EVT_MENU,
+                    lambda evt, id=corp_id, name=corp_name: OnHighlight(id, name, "Corporation", evt),
+                    item_hl_corp
+                )
+            else:
+                item_hl_corp = self.menu.Append(
+                    wx.ID_ANY, "Stop highlighting corporation '" + corp_name + "'"
+                )
+                self.menu.Bind(
+                    wx.EVT_MENU,
+                    lambda evt, id=corp_id, name=corp_name: OnDeHighlight(id, name, "Corporation", evt),
+                    item_hl_corp
+                )
+
+            if alliance_name is not None:
+                if not hl_alliance:
+                    item_hl_alliance = self.menu.Append(
+                        wx.ID_ANY, "Highlight alliance: '" + alliance_name + "'"
+                        )
+                    self.menu.Bind(
+                        wx.EVT_MENU,
+                        lambda evt, id=alliance_id, name=alliance_name: OnHighlight(id, name, "Alliance", evt),
+                        item_hl_alliance
+                        )
+                else:
+                    item_hl_alliance = self.menu.Append(
+                        wx.ID_ANY, "Stop highlighting alliance: '" + alliance_name + "'"
+                    )
+                    self.menu.Bind(
+                        wx.EVT_MENU,
+                        lambda evt, id=alliance_id, name=alliance_name: OnDeHighlight(id, name, "Alliance", evt),
+                        item_hl_alliance
                     )
 
             self.PopupMenu(self.menu, event.GetPosition())
