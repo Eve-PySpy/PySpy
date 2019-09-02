@@ -4,6 +4,7 @@ tmp/
 download/
 sql/
 stats_server/
+dll/
 
 # macOS stuff
 .DS_Store

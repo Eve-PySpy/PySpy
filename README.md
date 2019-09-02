@@ -83,6 +83,8 @@ PySpy comes as a single-file executable both in Windows and macOS. On both platf
 
 On Linux, you can run PySpy like any other Python3 script. PySpy was developed on Python 3.6.5 but should run on any other Python3 version, so long as you install the required packages listed in [requirements.txt](https://github.com/Eve-PySpy/PySpy/blob/master/requirements.txt).
 
+If you want to build PySpy into an executable yourself, then the pyinstaller spec file is provided, you will likely need to provide the api-ms-core dlls that python requires. details of this can be found [here](https://github.com/pyinstaller/pyinstaller/issues/4047#issuecomment-460869714). You will know you need them if pyinstaller complains about missing them when run.
+
 **Note**: PySpy automatically checks for updates on launch and will notify you if a new version is available.
 
 ## Uninstalling PySpy
