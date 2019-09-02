@@ -135,7 +135,7 @@ class Frame(wx.Frame):
         self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_cyno)
         self.hl_cyno.Check(self.options.Get("HlCyno", True))
 
-        self.hl_list = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&Highlighted List\t(pink)")
+        self.hl_list = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&Highlighted Entities List\t(pink)")
         self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_list)
         self.hl_list.Check(self.options.Get("HlList", True))
 
