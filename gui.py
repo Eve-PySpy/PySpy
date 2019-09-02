@@ -49,7 +49,7 @@ class Frame(wx.Frame):
         self.columns = (
             # Index, Heading, Format, Default Width, Can Toggle, Default Show, Menu Name, Outlist Column
             [0, "ID", wx.ALIGN_LEFT, 0, False, False, "", 0],
-            [1, "Warning", wx.ALIGN_LEFT, 60, True, True, "Warning"],
+            [1, "Warning", wx.ALIGN_LEFT, 80, True, True, "Warning\tno shortcut"],
             [2, "Faction ID", wx.ALIGN_LEFT, 0, False, False, "", 1],
             [3, "Character", wx.ALIGN_LEFT, 100, False, True, "", 2],
             [4, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+ALT+S", 15],
@@ -70,7 +70,7 @@ class Frame(wx.Frame):
             [19, "Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Covert Cyno Probability\tCTRL+ALT+C", 19],
             [20, "Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Regular Cyno Probability\tCTRL+ALT+R", 20],
             [21, "Last Covert Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Covert Cyno Ship Loss\tCTRL+ALT+<", 21],
-            [22, "Last Regular Cyno", wx.ALIGN_RIGHT, 100, True, True, "&Last Regular Cyno Ship Loss\tCTRL+ALT+>", 22],
+            [22, "Last Regular Cyno", wx.ALIGN_RIGHT, 110, True, True, "&Last Regular Cyno Ship Loss\tCTRL+ALT+>", 22],
             [23, "Abyssal Losses", wx.ALIGN_RIGHT, 100, True, False, "&Abyssal Losses\tCTRL+ALT+Y", 23],
             [24, "", None, 1, False, True, ""],  # Need for _stretchLastCol()
             )
@@ -134,6 +134,10 @@ class Frame(wx.Frame):
             )
         self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_cyno)
         self.hl_cyno.Check(self.options.Get("HlCyno", True))
+
+        self.hl_list = self.hl_sub.AppendCheckItem(wx.ID_ANY, "&Highlighted List\t(pink)")
+        self.hl_sub.Bind(wx.EVT_MENU, self._toggleHighlighting, self.hl_list)
+        self.hl_list.Check(self.options.Get("HlList", True))
 
         # Font submenu for font scale
         self.font_sub = wx.Menu()
@@ -263,6 +267,7 @@ class Frame(wx.Frame):
             self.lbl_colour = self.normal_dict["LBL"]
             self.hl1_colour = self.normal_dict["HL1"]
             self.hl2_colour = self.normal_dict["HL2"]
+            self.hl3_colour = self.normal_dict["HL3"]
         else:
             self.bg_colour = self.dark_dict["BG"]
             self.txt_colour = self.dark_dict["TXT"]
@@ -270,6 +275,7 @@ class Frame(wx.Frame):
             self.lbl_colour = self.dark_dict["LBL"]
             self.hl1_colour = self.dark_dict["HL1"]
             self.hl2_colour = self.dark_dict["HL2"]
+            self.hl3_colour = self.dark_dict["HL3"]
 
         # Set default colors
         self.SetBackgroundColour(self.bg_colour)
@@ -457,7 +463,7 @@ class Frame(wx.Frame):
         :param app: String which is to be appended to the org string
         :return:
         """
-        if org == "":
+        if org == "-":
             return app
         else:
             return org + " + " + app
@@ -486,9 +492,12 @@ class Frame(wx.Frame):
         # Add any NPSI fleet related characters to ignored_list
         npsi_list = self.options.Get("NPSIList", default=[])
         ignored_list = self.options.Get("ignoredList", default=[])
+        highlighted_list = self.options.Get("highlightedList", default=[])
         hl_blops = self.options.Get("HlBlops", True)
         hl_hic = self.options.Get("HlHic", True)
         hl_cyno = self.options.Get("HlCyno", True)
+        hl_list = self.options.Get("HlList", True)
+        hl_cyno_prob = config.CYNO_HL_PERCENTAGE
         ignore_count = 0
         rowidx = 0
         for r in outlist:
@@ -567,7 +576,7 @@ class Frame(wx.Frame):
 
             out = [
                 id,
-                "",
+                "-",
                 faction_id,
                 name,
                 sec_status,
@@ -600,24 +609,35 @@ class Frame(wx.Frame):
                     self.grid.HideRow(rowidx)
             colidx = 0
 
+            if hl_blops and r[9] is not None and r[11] > 0:  # Add BLOPS to Warning Column
+                out[1] = self.appendString(out[1], "BLOPS")
+            if hl_hic and r[9] is not None and r[12] > 0:
+                out[1] = self.appendString(out[1], "HIC")  # Add HIC to Warning Column
+            if hl_cyno and (
+                    cov_prob_float >= hl_cyno_prob or norm_prob_float >= hl_cyno_prob):  # Add CYNO to Warnin Column
+                out[1] = self.appendString(out[1], "CYNO")
+
             # Cell text formatting
-            hl_cyno_prob = config.CYNO_HL_PERCENTAGE
             for value in out:
                 color = False
                 self.grid.SetCellValue(rowidx, colidx, str(value))
                 self.grid.SetCellAlignment(self.columns[colidx][2], rowidx, colidx)
-                if hl_blops and r[9] is not None and r[11] > 0:  # Highlight BLOPS killer & HIC pilots.
+                if hl_blops and r[9] is not None and r[11] > 0:  # Highlight BLOPS chars
                     self.grid.SetCellTextColour(rowidx, colidx, self.hl1_colour)
-                    out[1] = self.appendString(out[1], "BLOPS")
                     color = True
-                if hl_hic and r[9] is not None and r[12] > 0:
+                if hl_hic and r[9] is not None and r[12] > 0:  # Highlight HIC chars
                     self.grid.SetCellTextColour(rowidx, colidx, self.hl1_colour)
-                    out[1] = self.appendString(out[1], "HIC")
                     color = True
-                if hl_cyno and (cov_prob_float >= hl_cyno_prob or norm_prob_float >= hl_cyno_prob):  # Highlight BLOPS killer & HIC pilots.
+                if hl_cyno and (
+                        cov_prob_float >= hl_cyno_prob or norm_prob_float >= hl_cyno_prob):  # Highlight CYNO chars
                     self.grid.SetCellTextColour(rowidx, colidx, self.hl2_colour)
-                    out[1] = self.appendString(out[1], "CYNO")
                     color = True
+
+                for entry in highlighted_list:  # Highlight chars from highlight list
+                    if hl_list and (entry[1] == out[3] or entry[1] == out[6] or entry[1] == out[8]):
+                        self.grid.SetCellTextColour(rowidx, colidx, self.hl3_colour)
+                        color = True
+
                 if not color:
                     self.grid.SetCellTextColour(rowidx, colidx, self.txt_colour)
                 colidx += 1
@@ -654,14 +674,22 @@ class Frame(wx.Frame):
     def _showContextMenu(self, event):
         '''
         Gets invoked by right click on any list item and produces a
-        context menu that allows the user to add the selected character
+        context menu that allows the user to add the selected character/corp/alliance
         to PySpy's list of "ignored characters" which will no longer be
-        shown in search results.
+        shown in search results and add the selected character/corp/alliance
+        to PySpy's list of "highlighted characters" which will hihglight them in the grid.
         '''
         def OnIgnore(id, name, type, e=None):
             ignored_list = self.options.Get("ignoredList", default=[])
             ignored_list.append([id, name, type])
             self.options.Set("ignoredList", ignored_list)
+            self.updateList(self.options.Get("outlist", None))
+
+        def OnHighlight(id, name, type, e=None):
+            highlighted_list = self.options.Get("highlightedList", default=[])
+            if [id, name, type] not in highlighted_list:
+                highlighted_list.append([id, name, type])
+            self.options.Set("highlightedList", highlighted_list)
             self.updateList(self.options.Get("outlist", None))
 
         rowidx = event.GetRow()
@@ -708,6 +736,37 @@ class Frame(wx.Frame):
                     item_ig_alliance
                     )
 
+            self.menu.AppendSeparator()
+
+            # Context menu to highlight characters, corporations and alliances
+            item_hl_char = self.menu.Append(
+                wx.ID_ANY, "Highlight character '" + character_name + "'"
+            )
+            self.menu.Bind(
+                wx.EVT_MENU,
+                lambda evt, id=character_id, name=character_name: OnHighlight(id, name, "Character", evt),
+                item_hl_char
+            )
+
+            item_hl_corp = self.menu.Append(
+                wx.ID_ANY, "Highlight corporation '" + corp_name + "'"
+            )
+            self.menu.Bind(
+                wx.EVT_MENU,
+                lambda evt, id=corp_id, name=corp_name: OnHighlight(id, name, "Corporation", evt),
+                item_hl_corp
+            )
+
+            if alliance_name is not None:
+                item_hl_alliance = self.menu.Append(
+                    wx.ID_ANY, "Highlight alliance: '" + alliance_name + "'"
+                    )
+                self.menu.Bind(
+                    wx.EVT_MENU,
+                    lambda evt, id=alliance_id, name=alliance_name: OnHighlight(id, name, "Alliance", evt),
+                    item_hl_alliance
+                    )
+
             self.PopupMenu(self.menu, event.GetPosition())
             self.menu.Destroy()
 
@@ -717,7 +776,7 @@ class Frame(wx.Frame):
         '''
         if event is None:
             # Default sort by character name ascending.
-            colidx = self.options.Get("SortColumn", self.columns[2][7])
+            colidx = self.options.Get("SortColumn", self.columns[3][7])
             sort_desc = self.options.Get("SortDesc", False)
         else:
             colidx = event.GetCol()
@@ -746,7 +805,7 @@ class Frame(wx.Frame):
         if outlist is None:
             outlist = self.options.Get("outlist", False)
 
-        if outlist:
+        if outlist and colidx != 1:
             outlist = sortarray.sort_array(
                 outlist,
                 self.columns[colidx][7],
@@ -806,6 +865,7 @@ class Frame(wx.Frame):
         self.options.Set("HlBlops", self.hl_blops.IsChecked())
         self.options.Set("HlCyno", self.hl_cyno.IsChecked())
         self.options.Set("HlHic", self.hl_hic.IsChecked())
+        self.options.Set("HlList", self.hl_list.IsChecked())
         self.updateList(self.options.Get("outlist", None))
 
     def _toggleStayOnTop(self, evt=None):
