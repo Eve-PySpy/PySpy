@@ -49,7 +49,7 @@ class Frame(wx.Frame):
         self.columns = (
             # Index, Heading, Format, Default Width, Can Toggle, Default Show, Menu Name, Outlist Column
             [0, "ID", wx.ALIGN_LEFT, 0, False, False, "", 0],
-            [1, "Warning", wx.ALIGN_LEFT, 80, True, True, "Warning\tno shortcut"],
+            [1, "Warning", wx.ALIGN_LEFT, 80, True, True, "Warning\tCTRL+ALT+X"],
             [2, "Faction ID", wx.ALIGN_LEFT, 0, False, False, "", 1],
             [3, "Character", wx.ALIGN_LEFT, 100, False, True, "", 2],
             [4, "Security", wx.ALIGN_RIGHT, 50, True, False, "&Security\tCTRL+ALT+S", 15],
@@ -174,7 +174,7 @@ class Frame(wx.Frame):
             self.review_ignore
             )
 
-        self.review_highlight = self.opt_menu.Append(wx.ID_ANY, "&Review Highlighted Entities\tno shortcut")
+        self.review_highlight = self.opt_menu.Append(wx.ID_ANY, "&Review Highlighted Entities\tCTRL+H")
         self.opt_menu.Bind(
             wx.EVT_MENU,
             self._openHightlightDialog,
