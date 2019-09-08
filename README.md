@@ -4,10 +4,10 @@
 
 <p align="left">
   <a href=https://github.com/Eve-PySpy/PySpy/releases/latest>
-    <img alt="Current Version" src="https://img.shields.io/github/release/whiterusssian/pyspy.svg">
+    <img alt="Current Version" src="https://img.shields.io/github/release/Eve-PySpy/pyspy.svg">
   </a>
   <a href=https://github.com/Eve-PySpy/PySpy/releases/latest>
-    <img alt="Number of releases downloaded" src="https://img.shields.io/github/downloads/WhiteRusssian/PySpy/total.svg">
+    <img alt="Number of releases downloaded" src="https://img.shields.io/github/downloads/Eve-PySpy/PySpy/total.svg">
   </a>
 </p>
 
@@ -45,6 +45,7 @@ If you enjoy using PySpy and would like to show your appreciation, please feel f
   <img alt="PySpy in action" src="https://github.com/Eve-PySpy/PySpy/blob/master/assets/v0.4_light_screenshot.png?raw=true">
 </p>
 
+* **Warning**: Displays reasons why a character might be highlighted
 * **Character**: Character name.
 * **Security**: Concord security status.
 * **Corporation**: Corporation of character.
@@ -69,11 +70,20 @@ If you enjoy using PySpy and would like to show your appreciation, please feel f
 
 ## Ignore Certain Entities
 
-PySpy allows you to specify a list of ignored characters, corporations and alliances. To add entities to that list, right click on a search result. You can remove entities from this list under _Options_->_Review Ignored Entities_
+PySpy allows you to specify a list of ignored characters, corporations and alliances. To add entities to that list, right click on a search result. You can remove entities from this list under _Options_->_Review Ignored Entities_.
 
 ## Ignore all Members of your NPSI Fleet
 
 For anyone using PySpy in not-purple-shoot-it (NPSI) fleets, you can tell PySpy to temporarily ignore your fleet mates by first running PySpy on all characters in your fleet chat and then selecting _Options_->_Set NPSI Ignore List_. Once the fleet is over, you can clear the list under _Options_->_Clear NPSI List_. Your custom ignore list described above will not be affected by this action.
+
+## Highlighting
+
+PySpy allows you to specify a list of highlighted characters, corporations and alliances.
+These entities will be highlighted in a different color from the others.
+To add and remove entities to that list, right click on a search result.
+You can also review and remove entities from this list under _Options_->_Review Highlighted Entities_.
+
+Furthermore PySpy can also highlight a character if he uses Black Ops and Heavy Interdiction Cruisers or frequently has a cyno fitted.
 
 ## Installation
 
@@ -99,7 +109,6 @@ Delete the PySpy executable and remove the following files manually:
 
 Below is a non-exhaustive list of additional features I plan to add to PySpy as and when the ESI and zKillboard APIs support them:
 
-* **Custom Highlighting**: Choose a list of characters, corproations or alliances to highlight.
 * **Standings**: Only show characters that are non-blue, i.e. neutral or hostile.
 * **Highlight New Pilots**: Highlight any pilots that have entered system since last PySpy run.
 * **Improved GUI**: The current GUI is very basic and while it works, I do appreciate that it is not ideal for people who cannot use it on a second screen but actually have to overlay it on-top of their EVE client.
