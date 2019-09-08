@@ -683,45 +683,45 @@ class Frame(wx.Frame):
             colidx = event.GetCol()
 
             # Corporation was clicked on, link to that killboard
-            if colidx == 5:
+            if colidx == 6:
                 corporation_id = self.options.Get("outlist")[rowidx][3]
                 url = url + "corporation/" + str(corporation_id) + "/"
 
             # Alliance was clicked on, link to that killboard if alliance exists
-            elif colidx == 7:
+            elif colidx == 8:
                 alliance_id = self.options.Get("outlist")[rowidx][5]
                 if alliance_id != None:
                     url = url + "alliance/" + str(alliance_id) + "/"
 
             # Faction was clicked on, link to that killboard if faction exists
-            elif colidx == 8:
+            elif colidx == 9:
                 faction_id = self.options.Get("outlist")[rowidx][1]
                 if faction_id != None:
                     url = url + "faction/" + str(faction_id) + "/"
 
             # Something other than character was clicked on but we want to look at the character with modifiers
-            elif colidx != 2:
+            elif colidx != 3:
                 # Set up the character base url
                 character_id = self.options.Get("outlist")[rowidx][0]
                 url = url + "character/" + str(character_id) + "/"
 
                 # Kills modifier
-                if colidx == 9:
+                if colidx == 10:
                     url = url + "kills/"
                 # Losses modifier
-                elif colidx == 10:
+                elif colidx == 11:
                     url = url + "losses/"
                 # Solo Modifier
-                elif colidx == 12:
+                elif colidx == 13:
                     url = url + "solo/"
                 # BLOPS Modifer
-                elif colidx == 13:
+                elif colidx == 14:
                     url = url + "group/898/"
                 # HIC Modifier
-                elif colidx == 14:
+                elif colidx == 15:
                     url = url + "group/894/"
                 # Abyssal Modifier
-                elif colidx:
+                elif colidx == 23:
                     url = url + "abyssal/"
 
             # This is a catch all if the url wasnt set or if a column other than a special one was clicked.
