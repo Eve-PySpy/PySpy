@@ -29,7 +29,7 @@ If you enjoy using PySpy and would like to show your appreciation, please feel f
 1. Open PySpy.
 2. In your EVE client, select a list of characters and copy them to the clipboard (`CTRL+C` on Windows *or* `⌘+C` on macOS).
 3. Wait until PySpy is done and inspect the results.
-4. Double-click a name to open the respective zKillboard in your browser.
+4. Double-click a name to open the respective zKillboard in your browser. zKillboard will open to the relevant page based on the column you have clicked on. (Or to the character page if you turn off advanced zkillboard linking)
 
 **Note**: PySpy will save its window location, size, column sizes, sorting order and transparency (slider on bottom right) and any other settings automatically and restore them the next time you launch it (settings will be reset whenever you update to a new version). If selected in the _View Menu_, PySpy will stay on top of the EVE client so long as the game runs in *window mode*.
 
