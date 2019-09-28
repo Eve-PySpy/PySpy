@@ -103,7 +103,7 @@ OPTIONS_OBJECT.Set("version", CURRENT_VER)
 
 # Various constants
 MAX_NAMES = 500  # The max number of char names to be processed
-ZKILL_DELAY = 0.02  # API rate limit is 10/second, pushing it a little...
+ZKILL_DELAY = 1  # API rate limit is 10/second, pushing it a little...
 ZKILL_CALLS = 100
 GUI_TITLE = "PySpy " + CURRENT_VER
 FONT_SCALE_MIN = 7  # 7 equates to 70%

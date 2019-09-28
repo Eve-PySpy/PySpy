@@ -80,7 +80,11 @@ class Query_zKill(threading.Thread):
             time.sleep(5)
             return "network error"
         if r.status_code != 200:
-            server_msg = json.loads(r.text)["error"]
+            server_msg = "N/A"
+            try:
+                server_msg = json.loads(r.text)["error"]
+            except:
+                pass
             Logger.info(
                 "zKillboard server returned error for character ID " +
                 str(self._char_id) + ". Error code: " + str(r.status_code),
