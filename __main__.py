@@ -24,6 +24,7 @@ import config
 import gui
 import reportstats
 import statusmsg
+import db
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words russsian, ccp's, pyperclip, chkversion, clpbd, gui
 # **********************************************************************
@@ -59,10 +60,11 @@ def check_name_validity(char_name):
 
 
 def analyze_chars(char_names):
+    conn, cur = db.connect_db()
     start_time = time.time()
     wx.CallAfter(app.PySpy.grid.ClearGrid)
     try:
-        outlist = analyze.main(char_names)
+        outlist = analyze.main(char_names, conn, cur)
         duration = round(time.time() - start_time, 1)
         reportstats.ReportStats(outlist, duration).start()
         if outlist is not None:

@@ -22,7 +22,7 @@ def connect_db():
     '''
     Create in memory database
 
-    @returns: connection and curser objects as conn and cur
+    @returns: connection and cursor objects as conn and cur
     '''
     conn = sqlite3.connect(":memory:")
     conn.isolation_level = None
@@ -40,29 +40,29 @@ def prepare_tables(conn, cur):
     function.
     '''
     cur.execute(
-        '''CREATE TABLE IF NOT EXISTS characters (char_name TEXT, char_id INT,
+        '''CREATE TABLE IF NOT EXISTS characters (char_name TEXT UNIQUE , char_id INT PRIMARY KEY ,
         corp_id INT, alliance_id INT, faction_id INT, kills INT,
         blops_kills INT, hic_losses INT, week_kills INT, losses INT,
         solo_ratio NUMERIC, sec_status NUMERIC, last_loss_date INT,
         last_kill_date INT, avg_attackers NUMERIC, covert_prob NUMERIC,
         normal_prob NUMERIC, last_cov_ship INT, last_norm_ship INT,
-        abyssal_losses INT)'''
+        abyssal_losses INT, last_update TEXT)'''
         )
     cur.execute(
-        '''CREATE TABLE IF NOT EXISTS corporations (id INT, name TEXT)'''
+        '''CREATE TABLE IF NOT EXISTS corporations (id INT PRIMARY KEY, name TEXT)'''
         )
     cur.execute(
-        '''CREATE TABLE IF NOT EXISTS alliances (id INT, name TEXT)'''
+        '''CREATE TABLE IF NOT EXISTS alliances (id INT PRIMARY KEY, name TEXT)'''
         )
     cur.execute(
-        '''CREATE TABLE IF NOT EXISTS factions (id INT, name TEXT)'''
+        '''CREATE TABLE IF NOT EXISTS factions (id INT PRIMARY KEY, name TEXT)'''
         )
     cur.execute(
-        '''CREATE TABLE IF NOT EXISTS ships (id INT, name TEXT)'''
+        '''CREATE TABLE IF NOT EXISTS ships (id INT PRIMARY KEY, name TEXT)'''
         )
     # Populate this table with the 4 faction warfare factions
     cur.executemany(
-        '''INSERT INTO factions (id, name) VALUES (?, ?)''',
+        '''INSERT OR REPLACE INTO factions (id, name) VALUES (?, ?)''',
         config.FACTION_IDS
         )
     conn.commit()
@@ -80,7 +80,7 @@ def prepare_ship_data(conn, cur):
         config.OPTIONS_OBJECT.Set("ship_data_date", datetime.date.today())
     # Populate ships table with ids and names for all ships in game
     cur.executemany(
-        '''INSERT INTO ships (id, name) VALUES (?, ?)''',
+        '''INSERT OR REPLACE INTO ships (id, name) VALUES (?, ?)''',
         config.OPTIONS_OBJECT.Get("ship_data", 0)
         )
     conn.commit()
@@ -97,8 +97,8 @@ def write_many_to_db(conn, cur, query_string, records, keepalive=True):
     try:
         cur.executemany(query_string, records)
         conn.commit()
-    except Exception:
-        Logger.error("Failed to write orders to database.", exc_info=True)
+    except Exception as e:
+        Logger.error("Failed to write orders to database. {}".format(e), exc_info=True)
         raise Exception
     records_added = conn.total_changes
     if not keepalive:

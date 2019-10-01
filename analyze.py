@@ -12,6 +12,7 @@ import json
 import threading
 import queue
 import time
+import datetime
 
 import apis
 import config
@@ -25,8 +26,7 @@ Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
 
 
-def main(char_names):
-    conn, cur = db.connect_db()
+def main(char_names, conn, cur):
     chars_found = get_char_ids(conn, cur, char_names)
     if chars_found > 0:
         # Run Pyspy remote database query in seprate thread
@@ -38,7 +38,7 @@ def main(char_names):
 
         # Run zKill query in seprate thread
         char_ids = cur.execute(
-            "SELECT char_id FROM characters ORDER BY char_name"
+            "SELECT char_id, last_update FROM characters ORDER BY char_name"
             ).fetchall()
         q_main = queue.Queue()
         tz = zKillStats(char_ids, q_main)
@@ -49,10 +49,13 @@ def main(char_names):
 
         # Join zKill thread
         tz.join()
+        update_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         zkill_stats = q_main.get()
+        for entry in zkill_stats:
+            entry.insert(-1, update_datetime)
         query_string = (
             '''UPDATE characters SET kills=?, blops_kills=?, hic_losses=?,
-            week_kills=?, losses=?, solo_ratio=?, sec_status=?
+            week_kills=?, losses=?, solo_ratio=?, sec_status=?, last_update=?
             WHERE char_id=?'''
             )
         db.write_many_to_db(conn, cur, query_string, zkill_stats)
@@ -78,7 +81,7 @@ def get_char_ids(conn, cur, char_names):
     for r in characters:
         records = records + ((r["id"], r["name"]),)
     query_string = (
-        '''INSERT INTO characters (char_id, char_name) VALUES (?, ?)'''
+        '''INSERT OR REPLACE INTO characters (char_id, char_name) VALUES (?, ?)'''
         )
     records_added = db.write_many_to_db(conn, cur, query_string, records)
     return records_added
@@ -158,13 +161,19 @@ class zKillStats(threading.Thread):
         threads = []
         q_sub = queue.Queue()
         for id in self._char_ids:
-            t = apis.Query_zKill(id[0], q_sub)
-            threads.append(t)
-            t.start()
-            count += 1
-            time.sleep(config.ZKILL_DELAY)
-            if count >= max:
-                break
+            if id[1] is not None:
+                time_difference = datetime.datetime.now() - datetime.datetime.strptime(id[1], "%Y-%m-%d %H:%M:%S")
+                seconds = time_difference.seconds
+            else:
+                seconds = config.CACHE_TIME + 1
+            if seconds > config.CACHE_TIME:
+                t = apis.Query_zKill(id[0], q_sub)
+                threads.append(t)
+                t.start()
+                count += 1
+                time.sleep(config.ZKILL_DELAY)
+                if count >= max:
+                    break
         for t in threads:
             t.join(5)
         zkill_stats = []
