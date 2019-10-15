@@ -199,19 +199,13 @@ class zKillStats(threading.Thread):
         threads = []
         q_sub = queue.Queue()
         for id in self._char_ids:
-            if id[1] is not None:
-                time_difference = datetime.datetime.now() - datetime.datetime.strptime(id[1], "%Y-%m-%d %H:%M:%S")
-                seconds = time_difference.seconds
-            else:
-                seconds = config.CACHE_TIME + 1
-            if seconds > config.CACHE_TIME:
-                t = apis.Query_zKill(id[0], q_sub)
-                threads.append(t)
-                t.start()
-                count += 1
-                time.sleep(config.ZKILL_DELAY)
-                if count >= max:
-                    break
+            t = apis.Query_zKill(id[0], q_sub)
+            threads.append(t)
+            t.start()
+            count += 1
+            time.sleep(config.ZKILL_DELAY)
+            if count >= max:
+                break
         for t in threads:
             t.join(5)
         zkill_stats = []

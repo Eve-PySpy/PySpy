@@ -111,7 +111,7 @@ FONT_SCALE_MIN = 7  # 7 equates to 70%
 FONT_SCALE_MAX = 13
 MAX_SHIP_DATA_AGE = 7  # The maximum age of ship data (used in db.prepare_ship_data)
 CYNO_HL_PERCENTAGE = 0.05  # The minimum cover / normal cyno probability for highlighting
-CACHE_TIME = 6000  # Seconds for which zkill requests are cached
+CACHE_TIME = 43200  # Seconds for which zkill requests are cached
 
 # Colour Scheme
 
