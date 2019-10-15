@@ -70,6 +70,7 @@ elif __file__:
 LOG_FILE = os.path.join(LOG_PATH, "pyspy.log")
 GUI_CFG_FILE = os.path.join(PREF_PATH, "pyspy.cfg")
 OPTIONS_FILE = os.path.join(PREF_PATH, "pyspy.pickle")
+DB_FILE = os.path.join(PREF_PATH, "pyspy.sqlite3")
 
 # Persisten options object
 OPTIONS_OBJECT = optstore.PersistentOptions(OPTIONS_FILE)

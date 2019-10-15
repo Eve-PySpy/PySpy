@@ -60,11 +60,12 @@ def check_name_validity(char_name):
 
 
 def analyze_chars(char_names):
-    conn, cur = db.connect_db()
+    conn_mem, cur_mem = db.connect_memory_db()
+    conn_dsk, cur_dsk = db.connect_persistent_db()
     start_time = time.time()
     wx.CallAfter(app.PySpy.grid.ClearGrid)
     try:
-        outlist = analyze.main(char_names, conn, cur)
+        outlist = analyze.main(char_names, conn_mem, cur_mem, conn_dsk, cur_dsk)
         duration = round(time.time() - start_time, 1)
         reportstats.ReportStats(outlist, duration).start()
         if outlist is not None:

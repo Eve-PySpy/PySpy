@@ -15,6 +15,8 @@ import wx.lib.agw.persist as pm
 
 import config
 
+import db
+
 import aboutdialog
 import highlightdialog
 import ignoredialog
@@ -206,6 +208,13 @@ class Frame(wx.Frame):
         self.zkill_mode.Check(self.options.Get("ZkillMode", False))
         self.opt_menu.Bind(wx.EVT_MENU, self._toggleZkillMode, self.zkill_mode)
         self.use_adv_zkill = self.zkill_mode.IsChecked()
+
+        self.opt_menu.AppendSeparator()
+
+        self.clear_cache = self.opt_menu.Append(wx.ID_ANY, '&Clear Character Cache')
+        self.opt_menu.Bind(wx.EVT_MENU, self.clear_character_cache, self.clear_cache)
+        # self.file_about = self.file_menu.Append(wx.ID_ANY, '&About\tCTRL+A')
+        # self.file_menu.Bind(wx.EVT_MENU, self._openAboutDialog, self.file_about)
 
         self.menubar.Append(self.opt_menu, 'Options')
 
@@ -1128,6 +1137,13 @@ class Frame(wx.Frame):
     def OnQuit(self, e):
         self.Close()
 
+    def clear_character_cache(self, e):
+        conn, cur = db.connect_persistent_db()
+        query_statement = '''DELETE FROM characters'''
+        cur.execute(query_statement)
+        conn.commit()
+        conn.close()
+        statusmsg.push_status("Cleared character cache")
 
 class App(wx.App):
     def OnInit(self):

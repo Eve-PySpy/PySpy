@@ -26,26 +26,44 @@ Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
 
 
-def main(char_names, conn, cur):
-    chars_found = get_char_ids(conn, cur, char_names)
+def main(char_names, conn_mem, cur_mem, conn_dsk, cur_dsk):
+    chars_found = get_char_ids(conn_mem, cur_mem, char_names)
     if chars_found > 0:
         # Run Pyspy remote database query in seprate thread
         tp = threading.Thread(
-            target=get_character_intel(conn, cur),
+            target=get_character_intel(conn_mem, cur_mem),
             daemon=True
             )
         tp.start()
 
         # Run zKill query in seprate thread
-        char_ids = cur.execute(
+        char_ids_mem = cur_mem.execute(
             "SELECT char_id, last_update FROM characters ORDER BY char_name"
             ).fetchall()
+        char_ids_dsk = cur_dsk.execute(
+            "SELECT char_id, last_update FROM characters ORDER BY char_name"
+            ).fetchall()
+
+        char_ids_mem_d = dict(char_ids_mem)
+        char_ids_dsk_d = dict(char_ids_dsk)
+
+        ids_mem = set(char_ids_mem_d.keys())
+        ids_dsk = set(char_ids_dsk_d.keys())
+
+        cache_hits = ids_mem & ids_dsk # Intersection of what we want and what we already have
+        cache_miss = ids_mem - cache_hits
+
+        Logger.info("Cache Hits - {}".format(len(cache_hits)))
+        Logger.info("Cache Miss - {}".format(len(cache_miss)))
+
+        zkill_req =  [r for r in char_ids_mem if r[0] in cache_miss]
+
         q_main = queue.Queue()
-        tz = zKillStats(char_ids, q_main)
+        tz = zKillStats(zkill_req, q_main)
         tz.start()
 
-        get_char_affiliations(conn, cur)
-        get_affil_names(conn, cur)
+        get_char_affiliations(conn_mem, cur_mem)
+        get_affil_names(conn_mem, cur_mem)
 
         # Join zKill thread
         tz.join()
@@ -58,12 +76,31 @@ def main(char_names, conn, cur):
             week_kills=?, losses=?, solo_ratio=?, sec_status=?, last_update=?
             WHERE char_id=?'''
             )
-        db.write_many_to_db(conn, cur, query_string, zkill_stats)
+
+        cache_stats = []
+        for char_id in cache_hits:
+            # kills, blops_kills, hic_losses, week_kills, losses, solo_ratio, sec_status, id
+            cache_query = '''SELECT kills, blops_kills, hic_losses, week_kills, losses, solo_ratio,
+             sec_status, last_update, char_id FROM characters WHERE char_id = ?'''
+            stat = cur_dsk.execute(cache_query, (char_id,)).fetchall()
+            cache_stats.append(stat)
+
+        print(zkill_stats)
+        print(cache_stats)
+
+        cache_char_query_string = (
+            '''INSERT OR REPLACE INTO characters (char_id, char_name) VALUES (?, ?)'''
+        )
+
+        db.write_many_to_db(conn_dsk, cur_dsk, cache_char_query_string, zkill_req)
+
+        db.write_many_to_db(conn_mem, cur_mem, query_string, zkill_stats)
+        db.write_many_to_db(conn_dsk, cur_dsk, query_string, zkill_stats)
 
         # Join Pyspy remote database thread
         tp.join()
-        output = output_list(cur)
-        conn.close()
+        output = output_list(cur_mem)
+        conn_mem.close()
         return output
     else:
         return

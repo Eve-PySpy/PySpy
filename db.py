@@ -18,7 +18,7 @@ Logger = logging.getLogger(__name__)
 # Example call: Logger.info("Something badhappened", exc_info=True) ****
 
 
-def connect_db():
+def connect_memory_db():
     '''
     Create in memory database
 
@@ -32,6 +32,19 @@ def connect_db():
     prepare_ship_data(conn, cur)
     return conn, cur
 
+def connect_persistent_db():
+    '''
+        Create on disk database
+
+        @returns: connection and cursor objects as conn and cur
+        '''
+    Logger.info("Connecting to persistent DB - {}".format(config.DB_FILE))
+    conn = sqlite3.connect(config.DB_FILE)
+    cur = conn.cursor()
+    cur.execute("PRAGMA journal_mode = TRUNCATE")
+    prepare_tables(conn, cur)
+    prepare_ship_data(conn, cur)
+    return conn, cur
 
 def prepare_tables(conn, cur):
     '''
