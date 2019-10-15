@@ -35,9 +35,7 @@ before_deploy:
   - ls dist/
 deploy:
   provider: releases
-  draft: true
-  api_key:
-    secure: $API_TOKEN
+  api_key: $GITHUB_TOKEN
   file_glob: true
   file:
     - "PySpy-$TRAVIS_OS_NAME-$TRAVIS_TAG.zip"
