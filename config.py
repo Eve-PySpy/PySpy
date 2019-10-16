@@ -70,6 +70,7 @@ elif __file__:
 LOG_FILE = os.path.join(LOG_PATH, "pyspy.log")
 GUI_CFG_FILE = os.path.join(PREF_PATH, "pyspy.cfg")
 OPTIONS_FILE = os.path.join(PREF_PATH, "pyspy.pickle")
+DB_FILE = os.path.join(PREF_PATH, "pyspy.sqlite3")
 
 # Persisten options object
 OPTIONS_OBJECT = optstore.PersistentOptions(OPTIONS_FILE)
@@ -110,7 +111,7 @@ FONT_SCALE_MIN = 7  # 7 equates to 70%
 FONT_SCALE_MAX = 13
 MAX_SHIP_DATA_AGE = 7  # The maximum age of ship data (used in db.prepare_ship_data)
 CYNO_HL_PERCENTAGE = 0.05  # The minimum cover / normal cyno probability for highlighting
-
+CACHE_TIME = 43200  # Seconds for which zkill requests are cached
 
 # Colour Scheme
 
@@ -164,12 +165,12 @@ LOG_DICT = {
     },
     'handlers': {
         'stream_handler': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'formatter': 'standard',
             'class': 'logging.StreamHandler',
         },
         'file_handler': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'filename': LOG_FILE,
             'class': 'logging.FileHandler',
             'formatter': 'standard'
@@ -187,7 +188,7 @@ LOG_DICT = {
     'loggers': {
         '': {
             'handlers': ['timed_rotating_file_handler', 'stream_handler'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True
         },
     }

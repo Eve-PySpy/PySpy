@@ -45,3 +45,6 @@ build/
 
 # venv
 venv/
+
+*.pdf
+*.db*
