@@ -1,0 +1,44 @@
+# Discussed at https://travis-ci.community/t/python-support-on-windows/241/18
+language: python            # this works for Linux but is an error on macOS or Windows
+matrix:
+  include:
+    - name: "Python 3.7.2 on macOS"
+      os: osx
+      osx_image: xcode11  # Python 3.7.2 running on macOS 10.14.3
+      language: shell       # 'language: python' is an error on Travis CI macOS
+      # python: 3.7         # 'python:' is ignored on Travis CI macOS
+      before_install: python3 --version ; pip3 --version ; sw_vers
+    - name: "Python 3.7.4 on Windows"
+      os: windows           # Windows 10.0.17134 N/A Build 17134
+      language: shell       # 'language: python' is an error on Travis CI Windows
+      # python: 3.7         # 'python:' is ignored on Travis CI Windows
+      before_install:
+        - choco install python3 --version=3.7.4  # this install takes at least 1 min 30 sec
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+install:
+  - pip3 install --upgrade pip  # all three OSes agree about 'pip3'
+  - pip3 install pathlib2
+  - pip3 install -r requirements.txt
+  - pip3 install pyinstaller==3.5
+script: pyinstaller __main__.spec
+notifications:
+  email: false
+
+before_deploy:
+  - ls dist/
+  - wget "http://s000.tinyupload.com/download.php?file_id=57916265111510766893&t=5791626511151076689386010" -O dist/README.pdf
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip ; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rm dist/PySpy ; fi
+  - (cd dist; zip -r "../PySpy-$TRAVIS_OS_NAME-$TRAVIS_TAG.zip" .)
+  - ls
+  - ls dist/
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file:
+    - "PySpy-$TRAVIS_OS_NAME-$TRAVIS_TAG.zip"
+  skip_cleanup: true
+  on:
+    tags: true
