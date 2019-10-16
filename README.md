@@ -9,6 +9,9 @@
   <a href=https://github.com/Eve-PySpy/PySpy/releases/latest>
     <img alt="Number of releases downloaded" src="https://img.shields.io/github/downloads/Eve-PySpy/PySpy/total.svg">
   </a>
+  <a href=https://travis-ci.org/Eve-PySpy/PySpy.svg?branch=master>
+    <img alt="Build Status" src="https://travis-ci.org/Eve-PySpy/PySpy.svg?branch=master">
+  </a>
 </p>
 
 **Download the latest release [here](https://github.com/Eve-PySpy/PySpy/releases/latest).**
