@@ -124,7 +124,7 @@ Despite extensive testing, you may encounter the odd bug. If so, please check if
 
 ## Dependencies & Acknowledgements
 
-* PySpy is written in [Python 3](https://www.python.org/) (v3.6.5), licensed under [PSF's License Agreement](https://docs.python.org/3/license.html#psf-license-agreement-for-python-release).
+* PySpy is written in [Python 3](https://www.python.org/), licensed under [PSF's License Agreement](https://docs.python.org/3/license.html#psf-license-agreement-for-python-release).
 * For API connectivity, PySpy relies on [Requests](http://docs.python-requests.org/) (v2.19.1), licensed under the [Apache License, Version 2.0](http://docs.python-requests.org/en/master/user/intro/#requests-license).
 * Clipboard monitoring is implemented with the help of [pyperclip](https://github.com/asweigart/pyperclip) (v1.6.2), licensed under the [3-Clause BSD License](https://github.com/asweigart/pyperclip/blob/master/LICENSE.txt).
 * The GUI is powered by [wxPython](https://www.wxpython.org/) (v4.0.3), licensed under the [wxWindows Library Licence](https://wxpython.org/pages/license/index.html).
