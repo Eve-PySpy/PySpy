@@ -14,6 +14,8 @@ import uuid
 import requests
 import wx  # required for colour codes in DARK_MODE
 
+import re # for wxPython version dentification
+
 import optstore
 # cSpell Checker - Correct Words****************************************
 # // cSpell:words MEIPASS, datefmt, russsian, pyinstaller, posix, pyspy
@@ -34,6 +36,9 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+# Identify wxPython version (not wxWidgets version).
+wx_major, wx_minor, wx_rev = \
+        map(int, re.match(r"([0-9]+)\.([0-9]+)(?:\.([0-9]+))", wx.__version__).groups())
 
 # If application is frozen executable
 if getattr(sys, 'frozen', False):

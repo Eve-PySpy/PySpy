@@ -100,7 +100,10 @@ class IgnoreDialog(wx.Frame):
         buttonSizer.Add(self.appBtn, 1, wx.RIGHT, 5)
         buttonSizer.Add(self.cnclBtn, 1, wx.LEFT, 5)
         self.buttonPanel.SetSizer(buttonSizer)
-        main.Add(self.buttonPanel, 0, wx.ALIGN_BOTTOM | wx.BOTTOM | wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+        if config.wx_minor < 1:
+            main.Add(self.buttonPanel, 0, wx.ALIGN_BOTTOM | wx.BOTTOM | wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+        else:
+            main.Add(self.buttonPanel, 0, wx.BOTTOM | wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
         self.SetSizer(main)
         self.Layout()
         self.Centre()
