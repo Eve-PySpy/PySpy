@@ -1,5 +1,7 @@
 <!--- // cSpell:words killboard, blops, hics, killboard's, cynos, ccp's, pyspy, psf's, pyperclip, pyinstaller, executables, jojo, unported, killmails --->
 
+# !! This Tool is unmaintained and in a not working state. !!
+
 # PySpy - A simple EVE Online character intel tool using CCP's ESI API
 
 <p align="left">
